@@ -1,3 +1,3 @@
-from .sugar import sugar
+from .sugar import SugarWarning, sugar
 
-__all__ = ["sugar"]
+__all__ = ["sugar", "SugarWarning"]

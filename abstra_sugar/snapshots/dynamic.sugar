@@ -17,8 +17,8 @@ html:
 							th: {group.name}
 						for item of group.items:
 							tr:
-								td: {item.key}
-								td: {item.value}
+								: {item.key}
+								: {item.value}
 
 				div:
 					for page of pages:

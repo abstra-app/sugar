@@ -120,7 +120,6 @@ IMPLICIT_CHILDREN = {
     "dl": "dt",
     "tr": "td",
     "thead": "th",
-    "nav": "a",
     "menu": "li",
 }
 

@@ -27,8 +27,8 @@ html:
 	body:
 		card("Users"):
 			ul:
-				li: Alice
-				li: Bob
+				: Alice
+				: Bob
 
 		card("Settings"):
 			p: Nothing here yet
