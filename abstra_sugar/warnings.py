@@ -1,17 +1,25 @@
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from .lexer import scan
 from .parser import IMPLICIT_CHILDREN
 from .tokens import Token
 
+Diagnostic = Dict[str, Any]
 
-def check_source(source: str) -> List[str]:
+
+def check_source(source: str) -> List[Diagnostic]:
     tokens = scan(source)
-    return [f"line {line}: {msg}" for line, msg in _check_tokens(tokens)]
+    return _check_tokens(tokens)
 
 
-def _check_tokens(tokens: List[Token]) -> List[Tuple[int, str]]:
-    warnings: List[Tuple[int, str]] = []
+def _emit(
+    results: List[Diagnostic], line: int, msg: str, level: str = "warning"
+) -> None:
+    results.append({"line": line, "message": msg, "level": level})
+
+
+def _check_tokens(tokens: List[Token]) -> List[Diagnostic]:
+    warnings: List[Diagnostic] = []
     line_num = 0
     parent_stack: List[Tuple[int, str]] = []  # (indent, tag)
     in_script = False
@@ -53,10 +61,10 @@ def _check_tokens(tokens: List[Token]) -> List[Tuple[int, str]]:
         # 1. explicit div when implicit would work
         if raw_tag == "div" and len(tag_part) > 3:
             short = tag_part[3:]
-            warnings.append((
-                line_num,
+            _emit(
+                warnings, line_num,
                 f"'{tag_part}' can be shortened to '{short}' (div is implicit)",
-            ))
+            )
 
         # 2. explicit child tag when parent has implicit mapping
         if parent_tag in IMPLICIT_CHILDREN:
@@ -69,11 +77,11 @@ def _check_tokens(tokens: List[Token]) -> List[Tuple[int, str]]:
                     suggestion = f": {token.text}"
                 else:
                     suggestion = ":"
-                warnings.append((
-                    line_num,
+                _emit(
+                    warnings, line_num,
                     f"'{raw_tag}' is implicit inside '{parent_tag}'"
                     f" — use '{suggestion}' instead",
-                ))
+                )
 
         # update parent stack
         if token.has_colon and not token.text:

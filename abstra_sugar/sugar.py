@@ -9,8 +9,10 @@ from .warnings import _check_tokens
 
 def sugar(text: str, data: Optional[dict] = None) -> str:
     tokens = scan(text)
-    for line_num, msg in _check_tokens(tokens):
-        _warnings.warn(f"line {line_num}: {msg}", SugarWarning, stacklevel=2)
+    for d in _check_tokens(tokens):
+        _warnings.warn(
+            f"line {d['line']}: {d['message']}", SugarWarning, stacklevel=2
+        )
     nodes = parse(tokens)
     return compile(nodes, data)
 
