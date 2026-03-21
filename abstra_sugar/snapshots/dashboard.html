@@ -443,10 +443,9 @@
 				container.innerHTML = "";
 				for (let card of cards) {
 					isPositive = card.change.startsWith("+");
-					container.innerHTML += `<div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 hover:border-gray-700 transition cursor-pointer"><div class="flex items-center justify-between mb-4"><div class="text-2xl">${card.icon}</div><span class="text-xs font-medium px-2 py-1 rounded-full ${isPositive ? 'bg-success/20 text-success': 'bg-danger/20 text-danger'}">${card.change}</span></div><div class="text-2xl font-bold mb-1">${card.value}</div><div class="text-sm text-gray-400">${card.label}</div></div>`;
+					container.innerHTML += `<div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 hover:border-gray-700 transition cursor-pointer"><div class="flex items-center justify-between mb-4"><div class="text-2xl">${card.icon}</div><span class="text-xs font-medium px-2 py-1 rounded-full">${card.change}</span></div><div class="text-2xl font-bold mb-1">${card.value}</div><div class="text-sm text-gray-400">${card.label}</div></div>`;
 				}
 			}
-
 			function renderTransactions() {
 				container = document.getElementById("transactions-list");
 				container.innerHTML = "";
@@ -454,10 +453,9 @@
 				for (let tx of sorted.slice(0, 10)) {
 					cat = categories[tx.category] || {color: "#6b7280", icon: "&#9679;"};
 					isIncome = tx.type === "income";
-					container.innerHTML += `<div class="flex items-center gap-4 px-6 py-4 hover:bg-gray-800/50 transition cursor-pointer border-b border-gray-800/50" onclick="showDetail('${tx.id}')"><div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:${cat.color}22">${cat.icon}</div><div class="flex-1 min-w-0"><div class="font-medium text-sm">${tx.desc}</div><div class="text-xs text-gray-400">${tx.category} &middot; ${tx.date}</div></div><div class="text-right"><div class="font-semibold text-sm ${isIncome ? 'text-success': 'text-white'}">${isIncome ? '+' : '-'}${fmt(tx.amount)}</div></div><button class="text-gray-500 hover:text-danger transition text-lg" onclick="event.stopPropagation();requestDelete('${tx.id}')">&times;</button></div>`;
+					container.innerHTML += `<div class="flex items-center gap-4 px-6 py-4 hover:bg-gray-800/50 transition cursor-pointer border-b border-gray-800/50"><div class="w-10 h-10 rounded-xl flex items-center justify-center">${cat.icon}</div><div class="flex-1 min-w-0"><div class="font-medium text-sm">${tx.desc}</div><div class="text-xs text-gray-400">${tx.category} &middot; ${tx.date}</div></div><div class="text-right"><div class="font-semibold text-sm">${fmt(tx.amount)}</div></div></div>`;
 				}
 			}
-
 			function renderPortfolio() {
 				container = document.getElementById("portfolio-body");
 				container.innerHTML = "";
@@ -467,10 +465,9 @@
 					plPct = ((inv.current - inv.avgCost) / inv.avgCost) * 100;
 					alloc = (inv.current * inv.shares / totalValue * 100).toFixed(1);
 					isUp = pl >= 0;
-					container.innerHTML += `<tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition"><td class="px-6 py-4"><div class="font-medium">${inv.ticker}</div><div class="text-xs text-gray-400">${inv.name}</div></td><td class="px-6 py-4">${inv.shares}</td><td class="px-6 py-4">${fmt(inv.avgCost)}</td><td class="px-6 py-4"><div>${fmt(inv.current)}</div><div class="text-xs ${inv.change >= 0 ? 'text-success': 'text-danger'}">${pct(inv.change)} today</div></td><td class="px-6 py-4 ${isUp ? 'text-success' : 'text-danger'}">${isUp ? '+' : ''}${fmt(pl)}<div class="text-xs">${pct(plPct)}</div></td><td class="px-6 py-4"><div class="flex items-center gap-2"><div class="flex-1 bg-gray-700 rounded-full h-1.5"><div class="bg-primary rounded-full h-1.5" style="width:${alloc}%"></div></div><span class="text-xs text-gray-400">${alloc}%</span></div></td><td class="px-6 py-4"><button class="text-xs text-primary hover:underline">Trade</button></td></tr>`;
+					container.innerHTML += `<tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition"><td class="px-6 py-4"><div class="font-medium">${inv.ticker}</div><div class="text-xs text-gray-400">${inv.name}</div></td><td class="px-6 py-4">${inv.shares}</td><td class="px-6 py-4">${fmt(inv.avgCost)}</td><td class="px-6 py-4"><div>${fmt(inv.current)}</div><div class="text-xs">${pct(inv.change)} today</div></td><td class="px-6 py-4">${fmt(pl)}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><div class="flex-1 bg-gray-700 rounded-full h-1"><div class="bg-primary rounded-full h-1"></div></div><span class="text-xs text-gray-400">${alloc}%</span></div></td><td class="px-6 py-4"><button class="text-xs text-primary hover:underline">Trade</button></td></tr>`;
 				}
 			}
-
 			function renderBudget() {
 				container = document.getElementById("budget-bars");
 				container.innerHTML = "";
@@ -479,20 +476,18 @@
 					spent = state.transactions.filter((t) => t.category === b.name && t.type === "expense").reduce((s, t) => s + t.amount, 0);
 					pctUsed = Math.min((spent / b.limit * 100), 100).toFixed(0);
 					color = pctUsed > 90 ? "#ef4444": pctUsed > 70 ? "#f59e0b" : "#10b981";
-					container.innerHTML += `<div><div class="flex justify-between text-sm mb-2"><span>${b.name}</span><span class="text-gray-400">${fmt(spent)} / ${fmt(b.limit)}</span></div><div class="w-full bg-gray-800 rounded-full h-2.5"><div class="h-2.5 rounded-full transition-all" style="width:${pctUsed}%;background:${color}"></div></div></div>`;
+					container.innerHTML += `<div><div class="flex justify-between text-sm mb-2"><span>${b.name}</span><span class="text-gray-400">${fmt(spent)} / ${fmt(b.limit)}</span></div><div class="w-full bg-gray-800 rounded-full h-2"><div class="h-2 rounded-full transition-all"></div></div></div>`;
 				}
 			}
-
 			function renderActivity() {
 				container = document.getElementById("activity-feed");
 				container.innerHTML = "";
 				activities = [...state.transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
 				for (let tx of activities) {
 					cat = categories[tx.category] || {color: "#6b7280", icon: "&#9679;"};
-					container.innerHTML += `<div class="flex gap-3"><div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="background:${cat.color}22">${cat.icon}</div><div class="flex-1"><div class="text-sm">${tx.desc}</div><div class="text-xs text-gray-400">${tx.date}</div></div><div class="text-xs font-medium ${tx.type === 'income' ? 'text-success': 'text-gray-400'}">${tx.type === 'income' ? '+' : '-'}${fmt(tx.amount)}</div></div>`;
+					container.innerHTML += `<div class="flex gap-3"><div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm">${cat.icon}</div><div class="flex-1"><div class="text-sm">${tx.desc}</div><div class="text-xs text-gray-400">${tx.date}</div></div><div class="text-xs font-medium">${fmt(tx.amount)}</div></div>`;
 				}
 			}
-
 			function renderNotifications() {
 				container = document.getElementById("notifications-list");
 				container.innerHTML = "";
@@ -501,7 +496,7 @@
 					return;
 				}
 				for (let n of state.notifications) {
-					container.innerHTML += `<div class="px-4 py-3 border-b border-gray-800/50 hover:bg-gray-800/30 transition(class=n unread ? "bg-primary/5" : "")"><div class="div text-sm">${n.text}</div><div class="div text-xs text-gray-400 mt-1">${n.time}</div></div>`;
+					container.innerHTML += `<div class="px-4 py-3 border-b border-gray-800/50 hover:bg-gray-800/30 transition"><div class="text-sm">${n.text}</div><div class="text-xs text-gray-400 mt-1">${n.time}</div></div>`;
 				}
 			}
 			function drawRevenueChart() {
