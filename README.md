@@ -73,21 +73,27 @@ Compiles to:
 | Feature | Sugar | Compiles to |
 |---|---|---|
 | Element | `div:` | `<div></div>` |
+| Implicit div | `.foo:` | `<div class="foo"></div>` |
+| ID shorthand | `#main:` | `<div id="main"></div>` |
+| Combined | `canvas#game.full:` | `<canvas id="game" class="full"></canvas>` |
 | Class | `div.foo.bar:` | `<div class="foo bar"></div>` |
 | Attribute | `a href=/about:` | `<a href="/about"></a>` |
 | Text | `h1: Hello` | `<h1>Hello</h1>` |
+| Interpolation | `li: {user.name}` | `<li>${user.name}</li>` *(in dynamic blocks)* |
 | Inline element | `td: a href=#: Click` | `<td><a href="#">Click</a></td>` |
 | Void element | `hr:` | `<hr>` |
 | Comment | `# ignored` | *(removed)* |
+| HTML for loop | `for x of arr:` | generates `<script>` with `.map()` |
+| HTML if | `if cond:` | generates `<script>` with conditional |
 | CSS property | `color: red` | `color: red;` |
 | CSS selector | `.foo:` | `.foo {` |
-| Function | `greet(x):` | `function greet(x) {` |
-| Arrow | `(x):` | `(x) => {` |
-| Inline arrow | `(x): x * 2` | `(x) => x * 2` |
-| For loop | `for x of arr:` | `for (let x of arr) {` |
-| If | `if x > 0:` | `if (x > 0) {` |
-| Class | `class Foo:` | `class Foo {` |
-| Object | indented key/values | `{key: value, ...}` |
+| JS function | `greet(x):` | `function greet(x) {` |
+| JS arrow | `(x):` | `(x) => {` |
+| JS inline arrow | `(x): x * 2` | `(x) => x * 2` |
+| JS for loop | `for x of arr:` | `for (let x of arr) {` |
+| JS if | `if x > 0:` | `if (x > 0) {` |
+| JS class | `class Foo:` | `class Foo {` |
+| JS object | indented key/values | `{key: value, ...}` |
 
 ## Documentation
 

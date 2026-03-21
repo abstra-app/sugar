@@ -1,7 +1,7 @@
 import re
 from typing import List, Tuple
 
-from .ast import Element, Node, ScriptElement, StyleElement, StyleRule
+from .ast import Element, ForBlock, IfBlock, Node, ScriptElement, StyleElement, StyleRule
 from .parser import parse_inline
 
 VOID_ELEMENTS = {
@@ -10,7 +10,18 @@ VOID_ELEMENTS = {
 }
 
 
+_id_counter = 0
+
+
+def _auto_id() -> str:
+    global _id_counter
+    _id_counter += 1
+    return f"_s{_id_counter}"
+
+
 def compile(nodes: List[Node]) -> str:
+    global _id_counter
+    _id_counter = 0
     lines: List[str] = []
     for node in nodes:
         _compile_node(node, 0, lines)
@@ -22,11 +33,19 @@ def _compile_node(node: Node, depth: int, lines: List[str]) -> None:
         _compile_style(node, depth, lines)
     elif isinstance(node, ScriptElement):
         _compile_script(node, depth, lines)
+    elif isinstance(node, (ForBlock, IfBlock)):
+        # top-level dynamic block — wrap in a div
+        wrapper = Element(tag="div", attributes={"id": _auto_id()}, children=[node])
+        _compile_element(wrapper, depth, lines)
     else:
         _compile_element(node, depth, lines)
 
 
 # --- HTML ---
+
+
+def _has_dynamic(children: list) -> bool:
+    return any(isinstance(c, (ForBlock, IfBlock)) for c in children)
 
 
 def _compile_element(el: Element, depth: int, lines: List[str]) -> None:
@@ -48,6 +67,26 @@ def _compile_element(el: Element, depth: int, lines: List[str]) -> None:
 
     if not el.children:
         lines.append(f"{indent}{opening}</{el.tag}>")
+        return
+
+    # dynamic children → generate script
+    if _has_dynamic(el.children):
+        if "id" not in el.attributes:
+            el.attributes["id"] = _auto_id()
+        el_id = el.attributes["id"]
+        opening = _build_opening_tag(el.tag, el.classes, el.attributes)
+        lines.append(f"{indent}{opening}</{el.tag}>")
+        lines.append(f"{indent}<script>")
+        si = indent + "\t"
+        lines.append(f"{si}(function() {{")
+        lines.append(f"{si}\tlet _t = \"\";")
+        for child in el.children:
+            _compile_dynamic_child(child, si + "\t", lines)
+        lines.append(
+            f'{si}\tdocument.getElementById("{el_id}").innerHTML = _t;'
+        )
+        lines.append(f"{si}}})();")
+        lines.append(f"{indent}</script>")
         return
 
     lines.append(f"{indent}{opening}")
@@ -73,6 +112,67 @@ def _compile_element_inline(el: Element) -> str:
 
     result += f"</{el.tag}>"
     return result
+
+
+# --- Dynamic rendering (for/if in HTML) ---
+
+
+def _interpolate(text: str) -> str:
+    return re.sub(r"\{([^}]+)\}", r"${\1}", text)
+
+
+def _compile_dynamic_child(child, indent: str, lines: List[str]) -> None:
+    if isinstance(child, ForBlock):
+        lines.append(
+            f"{indent}for (let {child.var} {child.keyword} {child.iterable}) {{"
+        )
+        for sub in child.children:
+            _compile_dynamic_child(sub, indent + "\t", lines)
+        lines.append(f"{indent}}}")
+    elif isinstance(child, IfBlock):
+        lines.append(f"{indent}if ({child.condition}) {{")
+        for sub in child.children:
+            _compile_dynamic_child(sub, indent + "\t", lines)
+        lines.append(f"{indent}}}")
+    elif isinstance(child, Element):
+        template = _compile_template_element(child)
+        lines.append(f"{indent}_t += `{template}`;")
+
+
+def _compile_template_element(el: Element) -> str:
+    opening = _build_template_tag(el.tag, el.classes, el.attributes)
+
+    if el.tag in VOID_ELEMENTS:
+        return opening
+
+    result = opening
+
+    if el.text:
+        inline = parse_inline(el.text)
+        if inline:
+            result += _compile_template_element(inline)
+        else:
+            result += _interpolate(el.text)
+    else:
+        for child in el.children:
+            if isinstance(child, Element):
+                result += _compile_template_element(child)
+
+    result += f"</{el.tag}>"
+    return result
+
+
+def _build_template_tag(tag: str, classes: list, attrs: dict) -> str:
+    parts = [f"<{tag}"]
+    if classes:
+        parts.append(f' class="{" ".join(classes)}"')
+    for k, v in attrs.items():
+        if v is True:
+            parts.append(f" {k}")
+        else:
+            parts.append(f' {k}="{_interpolate(str(v))}"')
+    parts.append(">")
+    return "".join(parts)
 
 
 def _build_opening_tag(tag: str, classes: list, attrs: dict) -> str:

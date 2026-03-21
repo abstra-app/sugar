@@ -1,6 +1,8 @@
 from typing import Dict, List, Optional, Tuple, Union
 
-from .ast import Element, Node, ScriptElement, StyleElement, StyleRule
+import re
+
+from .ast import Element, ForBlock, IfBlock, Node, ScriptElement, StyleElement, StyleRule
 from .tokens import Token
 
 HTML_TAGS = {
@@ -113,6 +115,18 @@ def _parse_node(item: dict) -> Node:
     token: Token = item["token"]
     children: list = item["children"]
 
+    # for/if blocks in HTML context
+    m = re.match(r"for\s+(.+?)\s+(of|in)\s+(.+)", token.head)
+    if m:
+        var, keyword, iterable = m.groups()
+        child_nodes = [_parse_node(c) for c in children]
+        return ForBlock(var=var, keyword=keyword, iterable=iterable, children=child_nodes)
+
+    if token.head.startswith("if "):
+        condition = token.head[3:].strip()
+        child_nodes = [_parse_node(c) for c in children]
+        return IfBlock(condition=condition, children=child_nodes)
+
     tag, classes, attrs = _parse_element_def(token.head)
 
     if tag == "style":
@@ -167,11 +181,31 @@ def _parse_element_def(
     parts = _split_respecting_parens(head)
     tag_part = parts[0]
 
+    # implicit div: .foo or #bar
+    if tag_part.startswith(".") or tag_part.startswith("#"):
+        tag_part = "div" + tag_part
+
+    # parse tag#id.class1.class2
+    tag_id = None
+    if "#" in tag_part:
+        idx = tag_part.index("#")
+        before = tag_part[:idx]
+        after = tag_part[idx + 1 :]
+        dot_idx = after.find(".")
+        if dot_idx != -1:
+            tag_id = after[:dot_idx]
+            tag_part = before + after[dot_idx:]
+        else:
+            tag_id = after
+            tag_part = before
+
     segments = tag_part.split(".")
-    tag = segments[0]
-    classes = segments[1:]
+    tag = segments[0] if segments[0] else "div"
+    classes = [c for c in segments[1:] if c]
 
     attrs: Dict[str, Union[str, bool]] = {}
+    if tag_id:
+        attrs["id"] = tag_id
     for part in parts[1:]:
         if "=" in part:
             k, v = part.split("=", 1)

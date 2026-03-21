@@ -3,12 +3,29 @@ from typing import Dict, List, Optional, Tuple, Union
 
 
 @dataclass
+class ForBlock:
+    var: str
+    keyword: str  # "of" or "in"
+    iterable: str
+    children: List["HtmlChild"] = field(default_factory=list)
+
+
+@dataclass
+class IfBlock:
+    condition: str
+    children: List["HtmlChild"] = field(default_factory=list)
+
+
+@dataclass
 class Element:
     tag: str
     classes: List[str] = field(default_factory=list)
     attributes: Dict[str, Union[str, bool]] = field(default_factory=dict)
     text: Optional[str] = None
-    children: List["Element"] = field(default_factory=list)
+    children: List["HtmlChild"] = field(default_factory=list)
+
+
+HtmlChild = Union[Element, ForBlock, IfBlock]
 
 
 @dataclass
@@ -32,4 +49,4 @@ class ScriptElement:
     body: str = ""
 
 
-Node = Union[Element, StyleElement, ScriptElement]
+Node = Union[Element, StyleElement, ScriptElement, ForBlock, IfBlock]

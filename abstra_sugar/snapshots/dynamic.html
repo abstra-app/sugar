@@ -1,0 +1,60 @@
+<html>
+	<body>
+		<div id="app">
+			<div class="header">
+				<h1>Dashboard</h1>
+			</div>
+			<div class="content">
+				<ul id="user-list"></ul>
+				<script>
+					(function() {
+						let _t = "";
+						for (let user of users) {
+							_t += `<li>${user.name} - ${user.email}</li>`;
+						}
+						document.getElementById("user-list").innerHTML = _t;
+					})();
+				</script>
+				<div id="status"></div>
+				<script>
+					(function() {
+						let _t = "";
+						if (error) {
+							_t += `<p class="text-red">${error}</p>`;
+						}
+						document.getElementById("status").innerHTML = _t;
+					})();
+				</script>
+				<table id="data"></table>
+				<script>
+					(function() {
+						let _t = "";
+						for (let group of groups) {
+							_t += `<tr><th>${group.name}</th></tr>`;
+							for (let item of group.items) {
+								_t += `<tr><td>${item.key}</td><td>${item.value}</td></tr>`;
+							}
+						}
+						document.getElementById("data").innerHTML = _t;
+					})();
+				</script>
+				<div id="links"></div>
+				<script>
+					(function() {
+						let _t = "";
+						for (let page of pages) {
+							_t += `<a href="/page/${page.id}">${page.title}</a>`;
+						}
+						document.getElementById("links").innerHTML = _t;
+					})();
+				</script>
+			</div>
+		</div>
+		<script>
+			users = [{name: "Alice", email: "alice@co.com"}, {name: "Bob", email: "bob@co.com"}];
+			error = null;
+			groups = [{name: "A", items: [{key: "a1", value: "v1"}]}];
+			pages = [{id: 1, title: "Home"}, {id: 2, title: "About"}];
+		</script>
+	</body>
+</html>

@@ -37,7 +37,7 @@ def scan(code: str) -> List[Token]:
             else:
                 break
 
-        if stripped.startswith("#"):
+        if stripped.startswith("# ") or stripped == "#":
             tokens.append(Token("comment", indent, stripped, "", False))
             continue
 

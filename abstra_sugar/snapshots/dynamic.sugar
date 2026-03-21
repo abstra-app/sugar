@@ -1,0 +1,37 @@
+html:
+	body:
+		# implicit div + #id
+		#app:
+			.header:
+				h1: Dashboard
+			.content:
+				# for loop in HTML with interpolation
+				ul#user-list:
+					for user of users:
+						li: {user.name} - {user.email}
+
+				# conditional in HTML
+				div#status:
+					if error:
+						p.text-red: {error}
+
+				# nested loops
+				table#data:
+					for group of groups:
+						tr:
+							th: {group.name}
+						for item of group.items:
+							tr:
+								td: {item.key}
+								td: {item.value}
+
+				# interpolation in attributes
+				div#links:
+					for page of pages:
+						a href=/page/{page.id}: {page.title}
+
+		script:
+			users = [{name: "Alice", email: "alice@co.com"}, {name: "Bob", email: "bob@co.com"}]
+			error = null
+			groups = [{name: "A", items: [{key: "a1", value: "v1"}]}]
+			pages = [{id: 1, title: "Home"}, {id: 2, title: "About"}]
