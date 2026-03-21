@@ -355,7 +355,25 @@ html lang=en:
 					return
 				cat = categories[tx.category] || {color: "#6b7280", icon: "&#9679;"}
 				content = document.getElementById("detail-content")
-				content.innerHTML = `<div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl" style="background:${cat.color}22">${cat.icon}</div><div><div class="font-semibold text-lg">${tx.desc}</div><div class="text-sm text-gray-400">${tx.category}</div></div></div><div class="grid grid-cols-2 gap-4"><div class="bg-gray-800 rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">Amount</div><div class="font-semibold ${tx.type === "income" ? "text-success" : "text-white"}">${tx.type === "income" ? "+" : "-"}${fmt(tx.amount)}</div></div><div class="bg-gray-800 rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">Date</div><div class="font-semibold">${tx.date}</div></div><div class="bg-gray-800 rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">Type</div><div class="font-semibold capitalize">${tx.type}</div></div><div class="bg-gray-800 rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">Category</div><div class="font-semibold">${tx.category}</div></div></div>${tx.notes ? '<div class="bg-gray-800 rounded-xl p-4 mt-4"><div class="text-xs text-gray-400 mb-1">Notes</div><div class="text-sm">' + tx.notes + '</div></div>' : ''}<div class="flex gap-3 mt-6"><button class="flex-1 px-4 py-2 text-sm rounded-lg bg-danger bg-opacity-20 text-danger hover:bg-opacity-30 transition" onclick="requestDelete('${tx.id}');closeModal('detail')">Delete</button></div>`
+				content.innerHTML = html!:
+					.flex.items-center.gap-4.mb-6:
+						.w-14.h-14.rounded-2xl.flex.items-center.justify-center.text-2xl: {cat.icon}
+						div:
+							.font-semibold.text-lg: {tx.desc}
+							.text-sm.text-gray-400: {tx.category}
+					.grid.grid-cols-2.gap-4:
+						.bg-gray-800.rounded-xl.p-4:
+							.text-xs.text-gray-400.mb-1: Amount
+							.font-semibold: {fmt(tx.amount)}
+						.bg-gray-800.rounded-xl.p-4:
+							.text-xs.text-gray-400.mb-1: Date
+							.font-semibold: {tx.date}
+						.bg-gray-800.rounded-xl.p-4:
+							.text-xs.text-gray-400.mb-1: Type
+							.font-semibold.capitalize: {tx.type}
+						.bg-gray-800.rounded-xl.p-4:
+							.text-xs.text-gray-400.mb-1: Category
+							.font-semibold: {tx.category}
 				openModal("detail")
 
 			# === RENDER FUNCTIONS ===
@@ -582,7 +600,12 @@ html lang=en:
 				for entry of entries:
 					cat = categories[entry[0]] || {color: "#6b7280"}
 					p = (entry[1] / total * 100).toFixed(0)
-					legend.innerHTML += `<div class="flex items-center justify-between text-sm"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background:${cat.color}"></div><span class="text-gray-300">${entry[0]}</span></div><span class="text-gray-400">${p}%</span></div>`
+					legend.innerHTML += html!:
+						.flex.items-center.justify-between.text-sm:
+							.flex.items-center.gap-2:
+								.w-3.h-3.rounded-full:
+								span.text-gray-300: {entry[0]}
+							span.text-gray-400: {p}%
 
 			# === RENDER ALL ===
 			renderAll():
