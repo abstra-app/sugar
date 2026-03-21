@@ -1,10 +1,16 @@
 from typing import List, Tuple
 
+from .lexer import scan
 from .parser import IMPLICIT_CHILDREN
 from .tokens import Token
 
 
-def check(tokens: List[Token]) -> List[Tuple[int, str]]:
+def check_source(source: str) -> List[str]:
+    tokens = scan(source)
+    return [f"line {line}: {msg}" for line, msg in _check_tokens(tokens)]
+
+
+def _check_tokens(tokens: List[Token]) -> List[Tuple[int, str]]:
     warnings: List[Tuple[int, str]] = []
     line_num = 0
     parent_stack: List[Tuple[int, str]] = []  # (indent, tag)
