@@ -87,13 +87,10 @@ syn match sugarTag /:\s\+\zs\(a\|span\|strong\|em\|b\|i\|code\|small\|mark\)\ze\
 
 syn match sugarSlot /^\s*\zsslot\ze\s*:/
 
-" ── 14. Classes — .name chains (AFTER tags so they win) ───
+" ── 14. Classes — any .name chain ──────────────────────────
 
-" Class starting a line (implicit div): .foo.bar:
-syn match sugarClass /^\s*\zs\(\.[a-zA-Z_-][a-zA-Z0-9_.:/+-]*\)\+/
-
-" Class after tag: h3.foo.bar (just the .foo.bar part)
-syn match sugarClass /\(html\|head\|body\|div\|span\|p\|a\|ul\|ol\|li\|table\|thead\|tbody\|tfoot\|tr\|td\|th\|h[1-6]\|img\|input\|button\|form\|label\|select\|option\|textarea\|header\|footer\|main\|nav\|section\|article\|aside\|canvas\|pre\|code\|blockquote\|iframe\|video\|audio\|source\|figure\|figcaption\|details\|summary\|dialog\|dl\|dt\|dd\|em\|strong\|b\|i\|small\|mark\|del\|ins\|sub\|sup\|br\|hr\|meta\|link\|title\|style\|script\)\zs\(\.[a-zA-Z_-][a-zA-Z0-9_.:/+-]*\)\+/
+" Matches .foo, .foo.bar, tag.foo.bar — just the dotted parts
+syn match sugarClass /\.[a-zA-Z_-][a-zA-Z0-9_.:/+-]*/
 
 " ── 15. IDs — #name (AFTER classes so yellow wins) ────────
 
