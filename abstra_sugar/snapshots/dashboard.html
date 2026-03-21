@@ -119,19 +119,21 @@
 			<main class="flex-1 p-8">
 				<div class="grid grid-cols-4 gap-6 mb-8" id="kpi-cards"></div>
 				<div class="grid grid-cols-3 gap-6 mb-8">
-					<div class="col-span-2 bg-gray-900 rounded-2xl border border-gray-800 p-6">
-						<div class="flex items-center justify-between mb-6">
-							<div>
-								<h3 class="font-semibold text-lg">Revenue Overview</h3>
-								<p class="text-sm text-gray-400">Monthly revenue and expenses</p>
+					<div class="col-span-2">
+						<div class="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+							<div class="flex items-center justify-between mb-6">
+								<div>
+									<h3 class="font-semibold text-lg">Revenue Overview</h3>
+									<p class="text-sm text-gray-400">Monthly revenue and expenses</p>
+								</div>
+								<div class="flex gap-2">
+									<button class="px-3 py-1 text-xs rounded-lg bg-primary bg-opacity-20 text-primary font-medium">1Y</button>
+									<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">6M</button>
+									<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">1M</button>
+								</div>
 							</div>
-							<div class="flex gap-2">
-								<button class="px-3 py-1 text-xs rounded-lg bg-primary bg-opacity-20 text-primary font-medium">1Y</button>
-								<button class="px-3 py-1 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">6M</button>
-								<button class="px-3 py-1 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">1M</button>
-							</div>
+							<canvas id="revenueChart" height="300"></canvas>
 						</div>
-						<canvas id="revenueChart" height="300"></canvas>
 					</div>
 					<div class="bg-gray-900 rounded-2xl border border-gray-800 p-6">
 						<h3 class="font-semibold text-lg mb-2">Spending Categories</h3>
@@ -141,53 +143,56 @@
 					</div>
 				</div>
 				<div class="grid grid-cols-3 gap-6 mb-8">
-					<div class="col-span-2 bg-gray-900 rounded-2xl border border-gray-800">
-						<div class="flex items-center justify-between p-6 border-b border-gray-800">
-							<h3 class="font-semibold text-lg">Recent Transactions</h3>
-							<div class="flex gap-2">
-								<button class="px-3 py-1 5 text-xs rounded-lg bg-gray-800 text-white font-medium">All</button>
-								<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">Income</button>
-								<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">Expense</button>
+					<div class="col-span-2">
+						<div class="bg-gray-900 rounded-2xl border border-gray-800">
+							<div class="flex items-center justify-between p-6 border-b border-gray-800">
+								<h3 class="font-semibold text-lg">Recent Transactions</h3>
+								<div class="flex gap-2">
+									<button class="px-3 py-1 5 text-xs rounded-lg bg-gray-800 text-white font-medium">All</button>
+									<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">Income</button>
+									<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">Expense</button>
+								</div>
 							</div>
 						</div>
 						<div id="transactions-list"></div>
 					</div>
 					<div class="bg-gray-900 rounded-2xl border border-gray-800">
-						<div class="p-6 border-b border-gray-800">
+						<div class="flex items-center justify-between p-6 border-b border-gray-800">
 							<h3 class="font-semibold text-lg">Activity Feed</h3>
+							<slot></slot>
 						</div>
-						<div class="p-4 space-y-4 max-h-96 overflow-y-auto" id="activity-feed"></div>
 					</div>
+					<div class="p-4 space-y-4 max-h-96 overflow-y-auto" id="activity-feed"></div>
 				</div>
-				<div class="bg-gray-900 rounded-2xl border border-gray-800 mb-8">
+				<div class="bg-gray-900 rounded-2xl border border-gray-800">
 					<div class="flex items-center justify-between p-6 border-b border-gray-800">
 						<h3 class="font-semibold text-lg">Investment Portfolio</h3>
 						<button class="px-4 py-2 text-sm bg-gray-800 rounded-lg hover:bg-gray-700 transition" onclick="openModal('addInvestment')">+ Add Position</button>
 					</div>
-					<div class="overflow-x-auto">
-						<table class="w-full">
-							<thead>
-								<tr class="text-left text-xs text-gray-400 uppercase">
-									<th class="px-6 py-4">Asset</th>
-									<th class="px-6 py-4">Shares</th>
-									<th class="px-6 py-4">Avg Cost</th>
-									<th class="px-6 py-4">Current</th>
-									<th class="px-6 py-4">P&L</th>
-									<th class="px-6 py-4">Allocation</th>
-									<th class="px-6 py-4">Actions</th>
-								</tr>
-							</thead>
-							<tbody id="portfolio-body"></tbody>
-						</table>
-					</div>
+				</div>
+				<div class="overflow-x-auto">
+					<table class="w-full">
+						<thead>
+							<tr class="text-left text-xs text-gray-400 uppercase">
+								<td class="px-6 py-4">Asset</td>
+								<td class="px-6 py-4">Shares</td>
+								<td class="px-6 py-4">Avg Cost</td>
+								<td class="px-6 py-4">Current</td>
+								<td class="px-6 py-4">P&L</td>
+								<td class="px-6 py-4">Allocation</td>
+								<td class="px-6 py-4">Actions</td>
+							</tr>
+						</thead>
+						<tbody id="portfolio-body"></tbody>
+					</table>
 				</div>
 				<div class="bg-gray-900 rounded-2xl border border-gray-800">
 					<div class="flex items-center justify-between p-6 border-b border-gray-800">
 						<h3 class="font-semibold text-lg">Monthly Budget</h3>
 						<p class="text-sm text-gray-400">March 2026</p>
 					</div>
-					<div class="p-6 grid grid-cols-2 gap-6" id="budget-bars"></div>
 				</div>
+				<div class="p-6 grid grid-cols-2 gap-6" id="budget-bars"></div>
 			</main>
 		</div>
 		<div class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center" id="modal-addTransaction">
@@ -199,7 +204,7 @@
 				<div class="p-6 space-y-4">
 					<div>
 						<label class="block text-sm text-gray-400 mb-1">Description</label>
-						<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="text" placeholder="Enter\" description id="tx-desc">
+						<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="text" placeholder="Enter description" id="tx-desc">
 					</div>
 					<div class="grid grid-cols-2 gap-4">
 						<div>
@@ -209,7 +214,7 @@
 						<div>
 							<label class="block text-sm text-gray-400 mb-1">Type</label>
 							<select class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" id="tx-type">
-								<option value="income">Income</option>
+								<value=income>Income</value=income>
 								<option value="expense">Expense</option>
 							</select>
 						</div>
@@ -217,7 +222,7 @@
 					<div>
 						<label class="block text-sm text-gray-400 mb-1">Category</label>
 						<select class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" id="tx-category">
-							<option>Salary</option>
+							<div>Salary</div>
 							<option>Food & Dining</option>
 							<option>Shopping</option>
 							<option>Transportation</option>
@@ -229,17 +234,14 @@
 					</div>
 					<div>
 						<label class="block text-sm text-gray-400 mb-1">Date</label>
-						<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="date" id="tx-date">
+						<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="date" placeholder="" id="tx-date">
 					</div>
 					<div>
 						<label class="block text-sm text-gray-400 mb-1">Notes</label>
 						<textarea class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none resize-none" rows="2" placeholder="Optional\" notes id="tx-notes"></textarea>
 					</div>
 				</div>
-				<div class="flex justify-end gap-3 p-6 border-t border-gray-800">
-					<button class="px-4 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700 transition" onclick="closeModal('addTransaction')">Cancel</button>
-					<button class="px-6 py-2 text-sm rounded-lg bg-primary hover:bg-opacity-80 font-medium transition" onclick="submitTransaction()">Add Transaction</button>
-				</div>
+				<div class="flex justify-end gap-3 p-6 border-t border-gray-800" id="modal-addTransaction-actions"></div>
 			</div>
 		</div>
 		<div class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center" id="modal-addInvestment">
@@ -252,7 +254,7 @@
 					<div class="grid grid-cols-2 gap-4">
 						<div>
 							<label class="block text-sm text-gray-400 mb-1">Ticker</label>
-							<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none uppercase" type="text" placeholder="AAPL" id="inv-ticker">
+							<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="text" placeholder="AAPL" id="inv-ticker">
 						</div>
 						<div>
 							<label class="block text-sm text-gray-400 mb-1">Shares</label>
@@ -266,14 +268,11 @@
 						</div>
 						<div>
 							<label class="block text-sm text-gray-400 mb-1">Date</label>
-							<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="date" id="inv-date">
+							<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="date" placeholder="" id="inv-date">
 						</div>
 					</div>
 				</div>
-				<div class="flex justify-end gap-3 p-6 border-t border-gray-800">
-					<button class="px-4 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700 transition" onclick="closeModal('addInvestment')">Cancel</button>
-					<button class="px-6 py-2 text-sm rounded-lg bg-primary hover:bg-opacity-80 font-medium transition" onclick="submitInvestment()">Add Position</button>
-				</div>
+				<div class="flex justify-end gap-3 p-6 border-t border-gray-800" id="modal-addInvestment-actions"></div>
 			</div>
 		</div>
 		<div class="fixed inset-0 modal-backdrop z-50 hidden" id="modal-detail">

@@ -195,12 +195,12 @@ def _compile_component_call(
     args = [a.strip() for a in call.args_raw.split(",") if a.strip()] if call.args_raw else []
     call_data = dict(data) if data else {}
     for param, arg in zip(comp.params, args):
-        if data is not None:
-            call_data[param] = _eval_expr(arg, data)
-        else:
+        try:
+            call_data[param] = _eval_expr(arg, call_data)
+        except Exception:
             call_data[param] = arg
 
-    call_data_ctx = call_data if data is not None else None
+    call_data_ctx = call_data if call_data else data
 
     for child in comp.children:
         _compile_node(child, depth, lines, call_data_ctx, components, call.children)

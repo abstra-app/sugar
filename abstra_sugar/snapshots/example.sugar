@@ -1,7 +1,7 @@
 html:
 	head:
 		style:
-			# Comments using '#'
+			# Comments using '# '
 			.table-header:
 				font-weight: bold
 	body:
@@ -10,22 +10,22 @@ html:
 		hr:
 		table:
 			thead.table-header:
-				th: id
-				th: nome
-				th: email
-				th: link
+				: id
+				: nome
+				: email
+				: link
 			tbody:
 				# This is another comment
 				tr onmouseover=mousehover(this) :
-					td: 1
-					td: foo
-					td: foo@company.com
-					td: a href=/users/1: Edit User
+					: 1
+					: foo
+					: foo@company.com
+					: a href=/users/1: Edit User
 				tr:
-					td: 2
-					td: bar
-					td: bar@co.com
-					td: a href=/users/2: Edit User
+					: 2
+					: bar
+					: bar@co.com
+					: a href=/users/2: Edit User
 	script module:
 		mousehover(t):
 			console.log(t)
@@ -54,4 +54,3 @@ html:
 				res = await fetch(`/api/users/${id}`)
 				dto = await res.json()
 				return new User(dto)
-

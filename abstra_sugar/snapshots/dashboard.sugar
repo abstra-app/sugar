@@ -1,3 +1,46 @@
+# === COMPONENTS ===
+
+card = (title):
+	.bg-gray-900.rounded-2xl.border.border-gray-800:
+		.flex.items-center.justify-between.p-6.border-b.border-gray-800:
+			h3.font-semibold.text-lg: {title}
+			slot:
+
+panel = ():
+	.bg-gray-900.rounded-2xl.border.border-gray-800.p-6:
+		slot:
+
+modal = (id, title):
+	.fixed.inset-0.modal-backdrop.z-50.hidden.items-center.justify-center id=modal-{id}:
+		.bg-gray-900.rounded-2xl.border.border-gray-800.w-full.max-w-lg.fade-in:
+			.flex.items-center.justify-between.p-6.border-b.border-gray-800:
+				h3.font-semibold.text-lg: {title}
+				button.text-gray-400.hover:text-white.text-2xl.leading-none onclick=closeModal('{id}'): &times;
+			.p-6.space-y-4:
+				slot:
+			.flex.justify-end.gap-3.p-6.border-t.border-gray-800 id=modal-{id}-actions:
+
+field = (label, id, type, placeholder):
+	div:
+		label.block.text-sm.text-gray-400.mb-1: {label}
+		input.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none type={type} placeholder={placeholder} id={id}:
+
+selectfield = (label, id):
+	div:
+		label.block.text-sm.text-gray-400.mb-1: {label}
+		select.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none id={id}:
+			slot:
+
+navlink = (icon, label):
+	a.flex.items-center.gap-3.px-4.py-2.5.rounded-lg.text-gray-400.hover:bg-gray-800.hover:text-white.transition href=#:
+		span: {icon}
+		span: {label}
+
+filterbtn = (label):
+	button.px-3.py-1.5.text-xs.rounded-lg.text-gray-400.hover:bg-gray-800.transition: {label}
+
+# === PAGE ===
+
 html lang=en:
 	head:
 		meta charset=UTF-8:
@@ -40,51 +83,42 @@ html lang=en:
 			::-webkit-scrollbar-thumb:
 				background: #374151
 				border-radius: 3px
+
 	body.bg-gray-950.text-white.min-h-screen:
 		# Sidebar
-		div.fixed.inset-y-0.left-0.w-64.bg-gray-900.border-r.border-gray-800.flex.flex-col.z-30 id=sidebar:
-			div.p-6.border-b.border-gray-800:
-				div.flex.items-center.gap-3:
-					div.w-10.h-10.bg-primary.rounded-xl.flex.items-center.justify-center.text-lg.font-bold: F
+		.fixed.inset-y-0.left-0.w-64.bg-gray-900.border-r.border-gray-800.flex.flex-col.z-30 id=sidebar:
+			.p-6.border-b.border-gray-800:
+				.flex.items-center.gap-3:
+					.w-10.h-10.bg-primary.rounded-xl.flex.items-center.justify-center.text-lg.font-bold: F
 					div:
-						div.font-bold.text-lg: FinDash
-						div.text-xs.text-gray-400: Pro Edition
+						.font-bold.text-lg: FinDash
+						.text-xs.text-gray-400: Pro Edition
 			nav.flex-1.p-4.space-y-1:
 				a.flex.items-center.gap-3.px-4.py-2.5.rounded-lg.bg-primary.bg-opacity-20.text-primary.font-medium href=#:
 					span: &#9632;
 					span: Dashboard
-				a.flex.items-center.gap-3.px-4.py-2.5.rounded-lg.text-gray-400.hover:bg-gray-800.hover:text-white.transition href=#:
-					span: &#9650;
-					span: Analytics
-				a.flex.items-center.gap-3.px-4.py-2.5.rounded-lg.text-gray-400.hover:bg-gray-800.hover:text-white.transition href=#:
-					span: &#9660;
-					span: Transactions
-				a.flex.items-center.gap-3.px-4.py-2.5.rounded-lg.text-gray-400.hover:bg-gray-800.hover:text-white.transition href=#:
-					span: &#9670;
-					span: Investments
-				a.flex.items-center.gap-3.px-4.py-2.5.rounded-lg.text-gray-400.hover:bg-gray-800.hover:text-white.transition href=#:
-					span: &#9672;
-					span: Budget
-				a.flex.items-center.gap-3.px-4.py-2.5.rounded-lg.text-gray-400.hover:bg-gray-800.hover:text-white.transition href=#:
-					span: &#9881;
-					span: Settings
-			div.p-4.border-t.border-gray-800:
-				div.flex.items-center.gap-3.px-2:
-					div.w-8.h-8.rounded-full.bg-gradient-to-br.from-primary.to-accent.flex.items-center.justify-center.text-sm.font-bold: JD
-					div.flex-1.min-w-0:
-						div.text-sm.font-medium.truncate: John Doe
-						div.text-xs.text-gray-400: Premium Plan
+				navlink("&#9650;", "Analytics")
+				navlink("&#9660;", "Transactions")
+				navlink("&#9670;", "Investments")
+				navlink("&#9672;", "Budget")
+				navlink("&#9881;", "Settings")
+			.p-4.border-t.border-gray-800:
+				.flex.items-center.gap-3.px-2:
+					.w-8.h-8.rounded-full.bg-gradient-to-br.from-primary.to-accent.flex.items-center.justify-center.text-sm.font-bold: JD
+					.flex-1.min-w-0:
+						.text-sm.font-medium.truncate: John Doe
+						.text-xs.text-gray-400: Premium Plan
 
 		# Main content
-		div.ml-64.flex.flex-col.min-h-screen:
+		.ml-64.flex.flex-col.min-h-screen:
 			# Top bar
 			header.sticky.top-0.bg-gray-950.bg-opacity-80.backdrop-blur-lg.border-b.border-gray-800.z-20:
-				div.flex.items-center.justify-between.px-8.py-4:
+				.flex.items-center.justify-between.px-8.py-4:
 					div:
 						h1.text-2xl.font-bold: Dashboard
 						p.text-sm.text-gray-400: Welcome back, John. Here's your financial overview.
-					div.flex.items-center.gap-4:
-						div.relative:
+					.flex.items-center.gap-4:
+						.relative:
 							input.bg-gray-800.text-sm.rounded-lg.pl-10.pr-4.py-2.w-64.border.border-gray-700.focus:border-primary.focus:outline-none.transition placeholder=Search... type=text:
 							span.absolute.left-3.top-2.text-gray-400: &#128269;
 						button.relative.p-2.rounded-lg.hover:bg-gray-800.transition onclick=toggleNotifications():
@@ -95,166 +129,121 @@ html lang=en:
 			# Content area
 			main.flex-1.p-8:
 				# KPI Cards
-				div.grid.grid-cols-4.gap-6.mb-8 id=kpi-cards:
+				.grid.grid-cols-4.gap-6.mb-8 id=kpi-cards:
 
 				# Charts row
-				div.grid.grid-cols-3.gap-6.mb-8:
-					# Revenue chart
-					div.col-span-2.bg-gray-900.rounded-2xl.border.border-gray-800.p-6:
-						div.flex.items-center.justify-between.mb-6:
-							div:
-								h3.font-semibold.text-lg: Revenue Overview
-								p.text-sm.text-gray-400: Monthly revenue and expenses
-							div.flex.gap-2:
-								button.px-3.py-1.text-xs.rounded-lg.bg-primary.bg-opacity-20.text-primary.font-medium: 1Y
-								button.px-3.py-1.text-xs.rounded-lg.text-gray-400.hover:bg-gray-800.transition: 6M
-								button.px-3.py-1.text-xs.rounded-lg.text-gray-400.hover:bg-gray-800.transition: 1M
-						canvas id=revenueChart height=300:
+				.grid.grid-cols-3.gap-6.mb-8:
+					.col-span-2:
+						panel():
+							.flex.items-center.justify-between.mb-6:
+								div:
+									h3.font-semibold.text-lg: Revenue Overview
+									p.text-sm.text-gray-400: Monthly revenue and expenses
+								.flex.gap-2:
+									button.px-3.py-1.text-xs.rounded-lg.bg-primary.bg-opacity-20.text-primary.font-medium: 1Y
+									filterbtn("6M")
+									filterbtn("1M")
+							canvas#revenueChart height=300:
 
-					# Donut chart
-					div.bg-gray-900.rounded-2xl.border.border-gray-800.p-6:
+					panel():
 						h3.font-semibold.text-lg.mb-2: Spending Categories
 						p.text-sm.text-gray-400.mb-6: This month's breakdown
-						canvas id=donutChart height=200:
-						div.mt-4.space-y-2 id=donut-legend:
+						canvas#donutChart height=200:
+						.mt-4.space-y-2 id=donut-legend:
 
 				# Transactions and activity
-				div.grid.grid-cols-3.gap-6.mb-8:
-					# Recent transactions
-					div.col-span-2.bg-gray-900.rounded-2xl.border.border-gray-800:
-						div.flex.items-center.justify-between.p-6.border-b.border-gray-800:
-							h3.font-semibold.text-lg: Recent Transactions
-							div.flex.gap-2:
+				.grid.grid-cols-3.gap-6.mb-8:
+					.col-span-2:
+						card("Recent Transactions"):
+							.flex.gap-2:
 								button.px-3.py-1.5.text-xs.rounded-lg.bg-gray-800.text-white.font-medium: All
-								button.px-3.py-1.5.text-xs.rounded-lg.text-gray-400.hover:bg-gray-800.transition: Income
-								button.px-3.py-1.5.text-xs.rounded-lg.text-gray-400.hover:bg-gray-800.transition: Expense
-						div id=transactions-list:
+								filterbtn("Income")
+								filterbtn("Expense")
+						#transactions-list:
 
-					# Activity feed
-					div.bg-gray-900.rounded-2xl.border.border-gray-800:
-						div.p-6.border-b.border-gray-800:
-							h3.font-semibold.text-lg: Activity Feed
-						div.p-4.space-y-4.max-h-96.overflow-y-auto id=activity-feed:
+					card("Activity Feed"):
+					.p-4.space-y-4.max-h-96.overflow-y-auto id=activity-feed:
 
 				# Investment portfolio
-				div.bg-gray-900.rounded-2xl.border.border-gray-800.mb-8:
-					div.flex.items-center.justify-between.p-6.border-b.border-gray-800:
-						h3.font-semibold.text-lg: Investment Portfolio
-						button.px-4.py-2.text-sm.bg-gray-800.rounded-lg.hover:bg-gray-700.transition onclick=openModal('addInvestment'): + Add Position
-					div.overflow-x-auto:
-						table.w-full:
-							thead:
-								tr.text-left.text-xs.text-gray-400.uppercase:
-									th.px-6.py-4: Asset
-									th.px-6.py-4: Shares
-									th.px-6.py-4: Avg Cost
-									th.px-6.py-4: Current
-									th.px-6.py-4: P&L
-									th.px-6.py-4: Allocation
-									th.px-6.py-4: Actions
-							tbody id=portfolio-body:
+				card("Investment Portfolio"):
+					button.px-4.py-2.text-sm.bg-gray-800.rounded-lg.hover:bg-gray-700.transition onclick=openModal('addInvestment'): + Add Position
+				.overflow-x-auto:
+					table.w-full:
+						thead:
+							tr.text-left.text-xs.text-gray-400.uppercase:
+								.px-6.py-4: Asset
+								.px-6.py-4: Shares
+								.px-6.py-4: Avg Cost
+								.px-6.py-4: Current
+								.px-6.py-4: P&L
+								.px-6.py-4: Allocation
+								.px-6.py-4: Actions
+						tbody id=portfolio-body:
 
 				# Budget section
-				div.bg-gray-900.rounded-2xl.border.border-gray-800:
-					div.flex.items-center.justify-between.p-6.border-b.border-gray-800:
-						h3.font-semibold.text-lg: Monthly Budget
-						p.text-sm.text-gray-400: March 2026
-					div.p-6.grid.grid-cols-2.gap-6 id=budget-bars:
+				card("Monthly Budget"):
+					p.text-sm.text-gray-400: March 2026
+				.p-6.grid.grid-cols-2.gap-6 id=budget-bars:
 
 		# Modals
-		div.fixed.inset-0.modal-backdrop.z-50.hidden.items-center.justify-center id=modal-addTransaction:
-			div.bg-gray-900.rounded-2xl.border.border-gray-800.w-full.max-w-lg.fade-in:
-				div.flex.items-center.justify-between.p-6.border-b.border-gray-800:
-					h3.font-semibold.text-lg: New Transaction
-					button.text-gray-400.hover:text-white.text-2xl.leading-none onclick=closeModal('addTransaction'): &times;
-				div.p-6.space-y-4:
-					div:
-						label.block.text-sm.text-gray-400.mb-1: Description
-						input.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none type=text placeholder=Enter\ description id=tx-desc:
-					div.grid.grid-cols-2.gap-4:
-						div:
-							label.block.text-sm.text-gray-400.mb-1: Amount
-							input.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none type=number placeholder=0.00 id=tx-amount:
-						div:
-							label.block.text-sm.text-gray-400.mb-1: Type
-							select.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none id=tx-type:
-								option value=income: Income
-								option value=expense: Expense
-					div:
-						label.block.text-sm.text-gray-400.mb-1: Category
-						select.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none id=tx-category:
-							option: Salary
-							option: Food & Dining
-							option: Shopping
-							option: Transportation
-							option: Entertainment
-							option: Bills & Utilities
-							option: Healthcare
-							option: Investment
-					div:
-						label.block.text-sm.text-gray-400.mb-1: Date
-						input.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none type=date id=tx-date:
-					div:
-						label.block.text-sm.text-gray-400.mb-1: Notes
-						textarea.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none.resize-none rows=2 placeholder=Optional\ notes id=tx-notes:
-				div.flex.justify-end.gap-3.p-6.border-t.border-gray-800:
-					button.px-4.py-2.text-sm.rounded-lg.bg-gray-800.hover:bg-gray-700.transition onclick=closeModal('addTransaction'): Cancel
-					button.px-6.py-2.text-sm.rounded-lg.bg-primary.hover:bg-opacity-80.font-medium.transition onclick=submitTransaction(): Add Transaction
+		modal("addTransaction", "New Transaction"):
+			field("Description", "tx-desc", "text", "Enter description")
+			.grid.grid-cols-2.gap-4:
+				field("Amount", "tx-amount", "number", "0.00")
+				selectfield("Type", "tx-type"):
+					value=income: Income
+					option value=expense: Expense
+			selectfield("Category", "tx-category"):
+				: Salary
+				option: Food & Dining
+				option: Shopping
+				option: Transportation
+				option: Entertainment
+				option: Bills & Utilities
+				option: Healthcare
+				option: Investment
+			field("Date", "tx-date", "date", "")
+			div:
+				label.block.text-sm.text-gray-400.mb-1: Notes
+				textarea.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none.resize-none rows=2 placeholder=Optional\ notes id=tx-notes:
 
-		# Investment modal
-		div.fixed.inset-0.modal-backdrop.z-50.hidden.items-center.justify-center id=modal-addInvestment:
-			div.bg-gray-900.rounded-2xl.border.border-gray-800.w-full.max-w-lg.fade-in:
-				div.flex.items-center.justify-between.p-6.border-b.border-gray-800:
-					h3.font-semibold.text-lg: Add Investment
-					button.text-gray-400.hover:text-white.text-2xl.leading-none onclick=closeModal('addInvestment'): &times;
-				div.p-6.space-y-4:
-					div.grid.grid-cols-2.gap-4:
-						div:
-							label.block.text-sm.text-gray-400.mb-1: Ticker
-							input.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none.uppercase type=text placeholder=AAPL id=inv-ticker:
-						div:
-							label.block.text-sm.text-gray-400.mb-1: Shares
-							input.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none type=number placeholder=0 id=inv-shares:
-					div.grid.grid-cols-2.gap-4:
-						div:
-							label.block.text-sm.text-gray-400.mb-1: Buy Price
-							input.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none type=number placeholder=0.00 id=inv-price:
-						div:
-							label.block.text-sm.text-gray-400.mb-1: Date
-							input.w-full.bg-gray-800.border.border-gray-700.rounded-lg.px-4.py-2.5.text-sm.focus:border-primary.focus:outline-none type=date id=inv-date:
-				div.flex.justify-end.gap-3.p-6.border-t.border-gray-800:
-					button.px-4.py-2.text-sm.rounded-lg.bg-gray-800.hover:bg-gray-700.transition onclick=closeModal('addInvestment'): Cancel
-					button.px-6.py-2.text-sm.rounded-lg.bg-primary.hover:bg-opacity-80.font-medium.transition onclick=submitInvestment(): Add Position
+		modal("addInvestment", "Add Investment"):
+			.grid.grid-cols-2.gap-4:
+				field("Ticker", "inv-ticker", "text", "AAPL")
+				field("Shares", "inv-shares", "number", "0")
+			.grid.grid-cols-2.gap-4:
+				field("Buy Price", "inv-price", "number", "0.00")
+				field("Date", "inv-date", "date", "")
 
 		# Detail slide-over
-		div.fixed.inset-0.modal-backdrop.z-50.hidden id=modal-detail:
-			div.absolute.right-0.top-0.h-full.w-full.max-w-md.bg-gray-900.border-l.border-gray-800.slide-in:
-				div.flex.items-center.justify-between.p-6.border-b.border-gray-800:
+		.fixed.inset-0.modal-backdrop.z-50.hidden id=modal-detail:
+			.absolute.right-0.top-0.h-full.w-full.max-w-md.bg-gray-900.border-l.border-gray-800.slide-in:
+				.flex.items-center.justify-between.p-6.border-b.border-gray-800:
 					h3.font-semibold.text-lg: Transaction Detail
 					button.text-gray-400.hover:text-white.text-2xl.leading-none onclick=closeModal('detail'): &times;
-				div.p-6.space-y-6 id=detail-content:
+				.p-6.space-y-6 id=detail-content:
 
 		# Notifications panel
-		div.fixed.top-16.right-8.w-80.bg-gray-900.rounded-2xl.border.border-gray-800.shadow-2xl.z-50.hidden id=notifications-panel:
-			div.p-4.border-b.border-gray-800.flex.items-center.justify-between:
+		.fixed.top-16.right-8.w-80.bg-gray-900.rounded-2xl.border.border-gray-800.shadow-2xl.z-50.hidden id=notifications-panel:
+			.p-4.border-b.border-gray-800.flex.items-center.justify-between:
 				h3.font-semibold: Notifications
 				button.text-xs.text-primary.hover:underline onclick=clearNotifications(): Clear all
-			div.max-h-96.overflow-y-auto id=notifications-list:
+			.max-h-96.overflow-y-auto id=notifications-list:
 
 		# Confirm delete modal
-		div.fixed.inset-0.modal-backdrop.z-50.hidden.items-center.justify-center id=modal-confirmDelete:
-			div.bg-gray-900.rounded-2xl.border.border-gray-800.w-full.max-w-sm.fade-in:
-				div.p-6.text-center:
-					div.w-12.h-12.rounded-full.bg-danger.bg-opacity-20.flex.items-center.justify-center.mx-auto.mb-4:
+		.fixed.inset-0.modal-backdrop.z-50.hidden.items-center.justify-center id=modal-confirmDelete:
+			.bg-gray-900.rounded-2xl.border.border-gray-800.w-full.max-w-sm.fade-in:
+				.p-6.text-center:
+					.w-12.h-12.rounded-full.bg-danger.bg-opacity-20.flex.items-center.justify-center.mx-auto.mb-4:
 						span.text-danger.text-2xl: !
 					h3.font-semibold.text-lg.mb-2: Confirm Delete
 					p.text-sm.text-gray-400: Are you sure? This action cannot be undone.
-				div.flex.gap-3.p-6.pt-0:
+				.flex.gap-3.p-6.pt-0:
 					button.flex-1.px-4.py-2.text-sm.rounded-lg.bg-gray-800.hover:bg-gray-700.transition onclick=closeModal('confirmDelete'): Cancel
 					button.flex-1.px-4.py-2.text-sm.rounded-lg.bg-danger.hover:bg-opacity-80.font-medium.transition onclick=confirmDelete(): Delete
 
 		# Toast container
-		div.fixed.bottom-6.right-6.space-y-3.z-50 id=toast-container:
+		.fixed.bottom-6.right-6.space-y-3.z-50 id=toast-container:
 
 		script:
 			# === DATA ===

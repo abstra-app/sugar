@@ -10,9 +10,14 @@ def find_colon(line: str) -> int:
             depth += 1
         elif ch == ")":
             depth -= 1
-        elif ch == ":" and depth == 0 and i > 0:
+        elif ch == ":" and depth == 0:
             # skip :// (URLs)
             if line[i + 1 : i + 3] == "//":
+                continue
+            # position 0: only if followed by space (implicit child)
+            if i == 0:
+                if len(line) > 1 and line[1] == " ":
+                    return i
                 continue
             # separator colon: followed by space or end of string
             if i == len(line) - 1 or line[i + 1] == " ":

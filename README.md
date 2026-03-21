@@ -89,6 +89,7 @@ Compiles to:
 | Comment | `# ignored` | *(removed)* |
 | Template for | `for x of arr:` | repeats children *(with data)* |
 | Template if | `if cond:` | conditional render *(with data)* |
+| Implicit child | `ul: > : Item` | `<ul><li>Item</li></ul>` |
 | CSS property | `color: red` | `color: red;` |
 | CSS selector | `.foo:` | `.foo {` |
 | JS function | `greet(x):` | `function greet(x) {` |

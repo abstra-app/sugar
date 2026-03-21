@@ -44,7 +44,8 @@ def _split_script_segments(tokens: List[Token]) -> List[Token]:
             i += 1
             continue
 
-        tag = _split_respecting_parens(token.head)[0].split(".")[0]
+        parts = _split_respecting_parens(token.head)
+        tag = parts[0].split(".")[0] if parts and parts[0] else ""
         if tag != "script":
             result.append(token)
             i += 1
@@ -111,10 +112,23 @@ def _build_tree(tokens: List[Token]) -> list:
     return root
 
 
+IMPLICIT_CHILDREN = {
+    "ul": "li",
+    "ol": "li",
+    "select": "option",
+    "datalist": "option",
+    "dl": "dt",
+    "tr": "td",
+    "thead": "th",
+    "nav": "a",
+    "menu": "li",
+}
+
+
 # --- node classification ---
 
 
-def _parse_node(item: dict) -> Node:
+def _parse_node(item: dict, parent_tag: str = "") -> Node:
     token: Token = item["token"]
     children: list = item["children"]
 
@@ -138,15 +152,29 @@ def _parse_node(item: dict) -> Node:
     m = re.match(r"for\s+(.+?)\s+(of|in)\s+(.+)", token.head)
     if m:
         var, keyword, iterable = m.groups()
-        child_nodes = [_parse_node(c) for c in children]
+        child_nodes = [_parse_node(c, parent_tag) for c in children]
         return ForBlock(var=var, keyword=keyword, iterable=iterable, children=child_nodes)
 
     if token.head.startswith("if "):
         condition = token.head[3:].strip()
-        child_nodes = [_parse_node(c) for c in children]
+        child_nodes = [_parse_node(c, parent_tag) for c in children]
         return IfBlock(condition=condition, children=child_nodes)
 
-    tag, classes, attrs = _parse_element_def(token.head)
+    # implicit child tag: empty head, .class, #id, or attr-only inherits from parent
+    head = token.head
+    if parent_tag in IMPLICIT_CHILDREN:
+        implicit_tag = IMPLICIT_CHILDREN[parent_tag]
+        if not head:
+            head = implicit_tag
+        else:
+            first = head.split()[0].split(".")[0].split("#")[0]
+            if not first:
+                # starts with . or # → prepend implicit tag instead of div
+                head = implicit_tag + head
+            elif first not in HTML_TAGS and "=" in first:
+                head = implicit_tag + " " + head
+
+    tag, classes, attrs = _parse_element_def(head)
 
     if tag == "style":
         rules = [_parse_style_item(child) for child in children]
@@ -159,7 +187,7 @@ def _parse_node(item: dict) -> Node:
         return ScriptElement(classes=classes, attributes=attrs, body=body)
 
     text = token.text if token.text else None
-    child_nodes = [_parse_node(child) for child in children]
+    child_nodes = [_parse_node(child, tag) for child in children]
     return Element(
         tag=tag,
         classes=classes,
@@ -198,6 +226,8 @@ def _parse_element_def(
     head: str,
 ) -> Tuple[str, List[str], Dict[str, Union[str, bool]]]:
     parts = _split_respecting_parens(head)
+    if not parts or not parts[0]:
+        return "div", [], {}
     tag_part = parts[0]
 
     # implicit div: .foo or #bar

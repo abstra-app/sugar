@@ -209,6 +209,43 @@ div:
 		a href=/page/{page.id}: {page.title}
 ```
 
+## Implicit Children
+
+Inside certain parent elements, children inherit the expected tag automatically:
+
+| Parent | Implicit child |
+|---|---|
+| `ul`, `ol`, `menu` | `li` |
+| `select`, `datalist` | `option` |
+| `tr` | `td` |
+| `thead` | `th` |
+| `dl` | `dt` |
+| `nav` | `a` |
+
+```sugar
+ul:
+	: Home
+	: About
+	.active: Contact
+
+select:
+	value=br: Brasil
+	value=us selected: USA
+```
+```html
+<ul>
+	<li>Home</li>
+	<li>About</li>
+	<li class="active">Contact</li>
+</ul>
+<select>
+	<option value="br">Brasil</option>
+	<option value="us" selected>USA</option>
+</select>
+```
+
+Classes (`.class`), IDs (`#id`), and attributes (`attr=val`) on implicit children work naturally — the implicit tag is prepended.
+
 ## Void Elements
 
 Self-closing elements (br, hr, img, input, meta, link, etc.) don't need a closing tag:
