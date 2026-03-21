@@ -235,6 +235,31 @@ console.log("visible");
 
 Blank lines in the source are preserved in the output, keeping code readable.
 
+## Template Literals with html!
+
+Inside script blocks, use `html!:` to write sugar HTML that compiles to a JS template literal string:
+
+```sugar
+script:
+	render():
+		container.innerHTML += html!:
+			.card.p-4:
+				h3: {item.name}
+				p.text-gray-400: {item.desc}
+```
+
+Compiles to:
+
+```js
+function render() {
+	container.innerHTML += `<div class="card p-4"><h3>${item.name}</h3><p class="text-gray-400">${item.desc}</p></div>`;
+}
+```
+
+`{expr}` inside `html!:` blocks becomes `${expr}` in the template literal. Attributes with interpolation also work: `a href=/users/{id}:` → `<a href="/users/${id}">`.
+
+This replaces verbose inline HTML template strings with sugar syntax.
+
 ## Script Attributes
 
 ```sugar

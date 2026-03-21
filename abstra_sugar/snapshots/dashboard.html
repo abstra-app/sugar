@@ -501,10 +501,9 @@
 					return;
 				}
 				for (let n of state.notifications) {
-					container.innerHTML += `<div class="px-4 py-3 border-b border-gray-800/50 hover:bg-gray-800/30 transition ${n.unread ? 'bg-primary/5': ''}"><div class="text-sm">${n.text}</div><div class="text-xs text-gray-400 mt-1">${n.time}</div></div>`;
+					container.innerHTML += `<div class="px-4 py-3 border-b border-gray-800/50 hover:bg-gray-800/30 transition(class=n unread ? "bg-primary/5" : "")"><div class="div text-sm">${n.text}</div><div class="div text-xs text-gray-400 mt-1">${n.time}</div></div>`;
 				}
 			}
-
 			function drawRevenueChart() {
 				canvas = document.getElementById("revenueChart");
 				ctx = canvas.getContext("2d");

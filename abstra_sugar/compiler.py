@@ -298,6 +298,34 @@ def _compile_script(
     lines.append(f"{indent}</script>")
 
 
+def _compile_template_block(
+    lines: List[Tuple[int, str, bool]], base_indent: int, tmpl_type: str
+) -> str:
+    # rebuild sugar source from parsed lines
+    src_lines: List[str] = []
+    for ind, content, is_blank in lines:
+        if is_blank:
+            continue
+        src_lines.append("\t" * (ind - base_indent) + content)
+    src = "\n".join(src_lines)
+
+    if tmpl_type == "html!":
+        from .lexer import scan
+        from .parser import parse as parse_nodes
+
+        nodes = parse_nodes(scan(src))
+        html = compile(nodes, data=None)
+        html = html.rstrip("\n")
+        # {expr} → ${expr} for template literal
+        html = re.sub(r"\{([^}]+)\}", r"${\1}", html)
+        # collapse to single line
+        html = re.sub(r"\n\t*", "", html)
+        return html
+
+    # css! and js! — pass through as raw text for now
+    return src.replace("\n", "\\n")
+
+
 def _parse_script_lines(body: str) -> List[Tuple[int, str, bool]]:
     parsed: List[Tuple[int, str, bool]] = []
     for line in body.split("\n"):
@@ -341,6 +369,29 @@ def _compile_script_body(
 
         prefix = "\t" * (base_depth + indent)
         in_class = bool(block_stack) and block_stack[-1][1]
+
+        # html!/css!/js! template literals
+        tmpl_match = re.match(r"(.+?)(html!|css!|js!)\s*:$", content)
+        if tmpl_match:
+            tmpl_prefix = tmpl_match.group(1)
+            tmpl_type = tmpl_match.group(2)
+            tmpl_lines: List[Tuple[int, str, bool]] = []
+            j = i + 1
+            while j < len(parsed):
+                ci, cc, cb = parsed[j]
+                if not cb and ci <= indent:
+                    break
+                tmpl_lines.append(parsed[j])
+                j += 1
+            tmpl_html = _compile_template_block(
+                tmpl_lines, indent + 1, tmpl_type
+            )
+            stmt = f"{tmpl_prefix}`{tmpl_html}`"
+            if _needs_semicolon(stmt):
+                stmt += ";"
+            out.append(f"{prefix}{stmt}")
+            i = j
+            continue
 
         if content.endswith(":"):
             header = content[:-1].rstrip()

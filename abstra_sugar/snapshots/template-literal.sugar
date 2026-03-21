@@ -1,0 +1,17 @@
+html:
+	body:
+		div id=app:
+		script:
+			users = [{name: "Alice", email: "a@co.com"}, {name: "Bob", email: "b@co.com"}]
+
+			render():
+				container = document.getElementById("app")
+				container.innerHTML = ""
+				for user of users:
+					container.innerHTML += html!:
+						.flex.items-center.gap-4.p-4.border-b:
+							.font-medium: {user.name}
+							.text-sm.text-gray-400: {user.email}
+							a href=/users/{user.id}: View
+
+			render()

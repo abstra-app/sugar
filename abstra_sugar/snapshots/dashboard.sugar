@@ -418,7 +418,10 @@ html lang=en:
 					container.innerHTML = '<div class="p-6 text-center text-sm text-gray-400">No notifications</div>'
 					return
 				for n of state.notifications:
-					container.innerHTML += `<div class="px-4 py-3 border-b border-gray-800/50 hover:bg-gray-800/30 transition ${n.unread ? 'bg-primary/5' : ''}"><div class="text-sm">${n.text}</div><div class="text-xs text-gray-400 mt-1">${n.time}</div></div>`
+					container.innerHTML += html!:
+						.px-4.py-3.border-b.border-gray-800/50.hover:bg-gray-800/30.transition(class=n.unread ? "bg-primary/5" : ""):
+							.div.text-sm: {n.text}
+							.div.text-xs.text-gray-400.mt-1: {n.time}
 
 			# === CHARTS ===
 			drawRevenueChart():
