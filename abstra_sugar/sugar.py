@@ -4,7 +4,7 @@ from typing import Optional
 from .compiler import compile
 from .lexer import scan
 from .parser import parse
-from .warnings import _check_tokens
+from .check import _check_tokens
 
 
 def sugar(text: str, data: Optional[dict] = None) -> str:

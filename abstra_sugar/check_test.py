@@ -1,4 +1,4 @@
-from .warnings import check_source
+from .check import check_source
 
 
 # --- explicit div ---
