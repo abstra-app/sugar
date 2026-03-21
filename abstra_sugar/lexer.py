@@ -1,0 +1,53 @@
+from typing import List
+
+from .tokens import Token
+
+
+def find_colon(line: str) -> int:
+    depth = 0
+    for i, ch in enumerate(line):
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif ch == ":" and depth == 0 and i > 0:
+            # skip :// (URLs)
+            if line[i + 1 : i + 3] == "//":
+                continue
+            # separator colon: followed by space or end of string
+            if i == len(line) - 1 or line[i + 1] == " ":
+                return i
+    return -1
+
+
+def scan(code: str) -> List[Token]:
+    tokens = []
+
+    for raw_line in code.split("\n"):
+        stripped = raw_line.strip()
+
+        if not stripped:
+            tokens.append(Token("blank", 0, "", "", False))
+            continue
+
+        indent = 0
+        for ch in raw_line:
+            if ch == "\t":
+                indent += 1
+            else:
+                break
+
+        if stripped.startswith("#"):
+            tokens.append(Token("comment", indent, stripped, "", False))
+            continue
+
+        colon_idx = find_colon(stripped)
+
+        if colon_idx != -1:
+            head = stripped[:colon_idx].rstrip()
+            text = stripped[colon_idx + 1 :].strip()
+            tokens.append(Token("line", indent, head, text, True))
+        else:
+            tokens.append(Token("line", indent, stripped, "", False))
+
+    return tokens

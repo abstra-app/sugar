@@ -1,0 +1,9 @@
+html:
+	script:
+		check(x):
+			if x > 10:
+				console.log("big")
+			else if x > 5:
+				console.log("medium")
+			else:
+				console.log("small")

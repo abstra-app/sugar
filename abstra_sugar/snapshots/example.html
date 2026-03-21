@@ -1,0 +1,60 @@
+<html>
+	<head>
+		<style>
+			.table-header {
+				font-weight: bold;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Users</h1>
+		<hr>
+		<table>
+			<thead class="table-header">
+				<th>id</th>
+				<th>nome</th>
+				<th>email</th>
+				<th>link</th>
+			</thead>
+			<tbody>
+				<tr onmouseover="mousehover(this)">
+					<td>1</td>
+					<td>foo</td>
+					<td>foo@company.com</td>
+					<td><a href="/users/1">Edit User</a></td>
+				</tr>
+				<tr>
+					<td>2</td>
+					<td>bar</td>
+					<td>bar@co.com</td>
+					<td><a href="/users/2">Edit User</a></td>
+				</tr>
+			</tbody>
+		</table>
+	</body>
+	<script module>
+		function mousehover(t) {
+			console.log(t);
+		}
+
+		async function logAfter(txt, time) {
+			await new Promise(
+				(res) => {
+					setTimeout(() => console.log(txt), time);
+				}
+			);
+		}
+
+		for (let x of [1, 2, 3]) {
+			if (x % 2 == 0) {
+				console.log(x);
+			}
+		}
+
+		class User {
+			constructor(dto): {this.name = dto.name, this.id = dto.id, this.email = dto.email};
+			say(): {logAfter(`Hi! My name is ${this.name}`, 5000)};
+			async fromId(id): {res = await fetch(`/api/users/${id}`), dto = await res.json(), return new User(dto)};
+		}
+	</script>
+</html>

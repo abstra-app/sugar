@@ -1,0 +1,57 @@
+html:
+	head:
+		style:
+			# Comments using '#'
+			.table-header:
+				font-weight: bold
+	body:
+		h1: Users
+		# Empty tags have no children
+		hr:
+		table:
+			thead.table-header:
+				th: id
+				th: nome
+				th: email
+				th: link
+			tbody:
+				# This is another comment
+				tr onmouseover=mousehover(this) :
+					td: 1
+					td: foo
+					td: foo@company.com
+					td: a href=/users/1: Edit User
+				tr:
+					td: 2
+					td: bar
+					td: bar@co.com
+					td: a href=/users/2: Edit User
+	script module:
+		mousehover(t):
+			console.log(t)
+
+		async logAfter(txt, time):
+			await new Promise(
+				(res):
+					setTimeout((): console.log(txt), time)
+			)
+
+		# This is a comment
+		for x of [1, 2, 3]:
+			if x % 2 == 0:
+				console.log(x)
+
+		class User:
+			constructor(dto):
+				this.name = dto.name
+				this.id = dto.id
+				this.email = dto.email
+
+			say():
+				logAfter(`Hi! My name is ${this.name}`, 5000)
+
+			async fromId(id):
+				res = await fetch(`/api/users/${id}`)
+				dto = await res.json()
+				return new User(dto)
+

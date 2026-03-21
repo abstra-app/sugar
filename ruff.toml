@@ -1,0 +1,26 @@
+# Ruff configuration for abstra-sugar
+
+exclude = [
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+target-version = "py39"
+
+line-length = 88
+
+[lint]
+select = ["E", "F", "W", "I"]
+
+ignore = [
+    "E501",
+]
+
+[format]
+quote-style = "double"
+indent-style = "space"
