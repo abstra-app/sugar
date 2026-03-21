@@ -1,250 +1,160 @@
 " Vim syntax file for Sugar template language
-" Language: Sugar
-" Maintainer: Abstra
-
 if exists("b:current_syntax")
   finish
 endif
 
 syn case match
 
-" ============================================================
-" GLOBAL (all contexts)
-" ============================================================
+" ── Low priority (base layer) ───────────────────────────────
 
-" Comments: # followed by space
-syn match sugarComment /# .*$/ containedin=ALL
+" Text after colon (content)
+syn match sugarText /:\s\zs.\+$/ contains=sugarInterp,sugarString,sugarTemplateLit,sugarInlineTag,sugarEntity
 
-" Strings
-syn region sugarString start=/"/ skip=/\\"/ end=/"/ contained containedin=ALL
-syn region sugarString start=/'/ skip=/\\'/ end=/'/ contained containedin=ALL
+" Colon separator
+syn match sugarColon /:/
 
-" Template literals with ${} interpolation
-syn region sugarTemplateLit start=/`/ skip=/\\`/ end=/`/ contained containedin=ALL contains=sugarTemplateExpr
-syn match sugarTemplateExpr /\${[^}]*}/ contained
+" ── Tags ────────────────────────────────────────────────────
 
-" Sugar interpolation {expr}
-syn match sugarInterp /{[^}]\+}/ containedin=ALL
+" HTML tag at start of line (before . # space or :)
+syn match sugarTag /^\s*\zs\(html\|head\|body\|div\|span\|p\|a\|ul\|ol\|li\|table\|thead\|tbody\|tr\|td\|th\|h[1-6]\|img\|input\|button\|form\|label\|select\|option\|textarea\|header\|footer\|main\|nav\|section\|article\|aside\|canvas\|pre\|code\|blockquote\|iframe\|video\|audio\|source\|figure\|figcaption\|details\|summary\|dialog\|dl\|dt\|dd\|em\|strong\|b\|i\|small\|mark\|del\|ins\|sub\|sup\|br\|hr\|meta\|link\|title\|style\|script\)\ze[.# :]/
 
-" Numbers
-syn match sugarNumber /\<\d\+\(\.\d\+\)\?\>/ containedin=ALL
+" Inline tag in text content
+syn match sugarInlineTag /:\s\+\zs\(a\|span\|strong\|em\|b\|i\|code\|small\)\ze\s/
 
-" Colon separator (end of line or before space)
-syn match sugarColon /:\ze\s/ containedin=ALL
-syn match sugarColon /:\s*$/ containedin=ALL
+" slot keyword
+syn match sugarSlot /^\s*\zsslot\ze:/
 
-" ============================================================
-" HTML CONTEXT (default)
-" ============================================================
+" ── Classes and IDs (higher priority than tags) ─────────────
 
-" HTML tags
-syn keyword sugarTag a abbr address article aside audio b bdi bdo blockquote
-syn keyword sugarTag body br button canvas caption cite code col colgroup
-syn keyword sugarTag data datalist dd del details dfn dialog div dl dt em
-syn keyword sugarTag embed fieldset figcaption figure footer form
-syn keyword sugarTag h1 h2 h3 h4 h5 h6 head header hgroup hr html
-syn keyword sugarTag i iframe img input ins kbd label legend li link
-syn keyword sugarTag main map mark menu meta meter nav noscript object
-syn keyword sugarTag ol optgroup option output p picture pre progress
-syn keyword sugarTag q rp rt ruby s samp section select slot small
-syn keyword sugarTag source span strong sub summary sup
-syn keyword sugarTag table tbody td template textarea tfoot th thead time
-syn keyword sugarTag title tr track u ul var video wbr
+" Class chain: .foo.bar.baz (whole chain)
+syn match sugarClass /\.[a-zA-Z_-][a-zA-Z0-9_.:/+-]*/
 
-" Void elements (distinct color)
-syn keyword sugarVoid hr br img input meta link source track wbr col embed area base param
-
-" Slot element
-syn keyword sugarSlot slot
-
-" Class shorthand: .class-name (possibly chained .a.b.c)
-syn match sugarClass /\.[a-zA-Z_-][a-zA-Z0-9_:/.+-]*/
-
-" ID shorthand: #id-name
+" ID: #name
 syn match sugarID /#[a-zA-Z_-][a-zA-Z0-9_-]*/
 
-" Attributes: key=value
-syn match sugarAttrKey /\<[a-zA-Z_-]\+\ze=/ containedin=ALL
-syn match sugarAttrOp /=/ contained containedin=ALL
-syn match sugarAttrVal /=[^ \t:]\+/ contains=sugarAttrOp,sugarInterp
+" ── Attributes ──────────────────────────────────────────────
 
-" Boolean attributes
+" key=value
+syn match sugarAttr /\s\zs[a-zA-Z_-]\+=[^ \t:]*/  contains=sugarAttrEq
+syn match sugarAttrEq /=/ contained
+
+" Boolean attributes (standalone words after tag)
 syn keyword sugarBoolAttr module disabled checked selected required readonly
-syn keyword sugarBoolAttr autofocus autoplay controls defer async hidden
-syn keyword sugarBoolAttr multiple novalidate open reversed
+syn keyword sugarBoolAttr autofocus autoplay controls defer hidden multiple
 
-" Implicit child (line starting with :)
-syn match sugarImplicitChild /^\s*: / containedin=ALL
+" ── Strings ─────────────────────────────────────────────────
 
-" Inline element in text (tag after : in text content)
-syn match sugarInlineTag /:\s\+\zs\(a\|span\|strong\|em\|b\|i\|code\|small\|mark\|abbr\|sub\|sup\)\>/
+syn region sugarString start=/"/ skip=/\\"/ end=/"/
+syn region sugarString start=/'/ skip=/\\'/ end=/'/
+syn region sugarTemplateLit start=/`/ skip=/\\`/ end=/`/ contains=sugarTemplateExpr
+syn match sugarTemplateExpr /\${[^}]*}/ contained
 
-" HTML entities
-syn match sugarEntity /&\w\+;/
-syn match sugarEntity /&#\d\+;/
+" ── Interpolation ───────────────────────────────────────────
 
-" ============================================================
-" TEMPLATE CONTEXT (for/if in HTML)
-" ============================================================
+syn match sugarInterp /{[^}]\+}/
 
-" for loop in HTML
-syn match sugarTemplateFor /^\s*\zsfor\s\+.\+\s\+\(of\|in\)\s\+.\+/ contains=sugarTemplateForKw,sugarTemplateOfIn
-syn keyword sugarTemplateForKw for contained
-syn keyword sugarTemplateOfIn of in contained
+" ── Numbers ─────────────────────────────────────────────────
 
-" if conditional in HTML
-syn match sugarTemplateIf /^\s*\zsif\s\+.\+/ contains=sugarTemplateIfKw
-syn keyword sugarTemplateIfKw if contained
+syn match sugarNumber /\<\d\+\(\.\d\+\)\?\>/
 
-" ============================================================
-" COMPONENT CONTEXT
-" ============================================================
+" ── HTML entities ───────────────────────────────────────────
 
-" Component definition: name = (params):
-syn match sugarComponentDef /^\s*\zs\w\+\s*=\s*([^)]*)/ contains=sugarComponentName,sugarComponentParams,sugarComponentEq
-syn match sugarComponentName /\w\+\ze\s*=/ contained
-syn match sugarComponentEq /=/ contained
-syn match sugarComponentParams /([^)]*)/ contained contains=sugarParamName
+syn match sugarEntity /&[#a-zA-Z0-9]\+;/
+
+" ── Implicit child ──────────────────────────────────────────
+
+syn match sugarImplicit /^\s*\zs:\ze\s/
+
+" ── Keywords (for/if/else/while/class etc.) ─────────────────
+
+syn match sugarKeyword /^\s*\zs\(for\|if\|else\|while\|try\|catch\|finally\|class\|async\|return\|await\|throw\)\>/
+syn match sugarKeywordOf /\s\zs\(of\|in\|extends\)\ze\s/
+
+" JS keywords inside lines
+syn keyword sugarJSKw const let var this new typeof instanceof delete void super
+syn keyword sugarJSKw import export default from switch case break continue do yield
+
+" ── Builtins ────────────────────────────────────────────────
+
+syn keyword sugarBuiltin console document window Math JSON Object Array
+syn keyword sugarBuiltin String Number Boolean Date Promise Error
+syn keyword sugarBuiltin setTimeout setInterval requestAnimationFrame
+syn keyword sugarBuiltin parseInt parseFloat isNaN fetch localStorage
+
+syn keyword sugarConstant true false null undefined NaN Infinity
+
+" ── Operators ───────────────────────────────────────────────
+
+syn match sugarOp /=>/
+syn match sugarOp /[=!<>]=\=/
+syn match sugarOp /&&\|||\|??/
+syn match sugarOp /\.\.\./
+
+" ── CSS specifics ───────────────────────────────────────────
+
+syn match sugarAtRule /^\s*\zs@\(keyframes\|media\|import\|font-face\|supports\|layer\)\>/
+syn match sugarMixinCall /^\s*\zs@\w\+()/
+syn match sugarCSSColor /#[0-9a-fA-F]\{3,8\}\>/
+syn match sugarCSSFunc /\<\(rgb\|rgba\|hsl\|hsla\|var\|calc\|url\|linear-gradient\)\ze(/
+syn match sugarCSSUnit /\d\zs\(px\|em\|rem\|vh\|vw\|%\|s\|ms\|deg\|fr\)\>/
+
+" ── Component/function definitions (highest priority) ──────
+
+" Component def: name = (params):
+syn match sugarFuncDef /^\s*\zs\w\+\ze\s*=\s*(/
+syn match sugarFuncDefEq /\s\zs=\ze\s*(/
+
+" Function/method def in script: name(args):
+syn match sugarFuncDef /^\s*\(async\s\+\)\?\zs\w\+\ze\s*([^)]*)\s*:$/
+
+" Component call: name(args)
+syn match sugarFuncCall /^\s*\zs\w\+\ze\s*(/
+
+" Params in parens (for defs)
+syn match sugarParams /(\zs[^)]*\ze)/ contains=sugarParamName
 syn match sugarParamName /\w\+/ contained
 
-" Component call: name(args) — not an HTML tag
-syn match sugarComponentCall /^\s*\zs\(card\|panel\|modal\|field\|selectfield\|navlink\|filterbtn\|\w\+\)\s*([^)]*)\ze\s*:/ contains=sugarCallName,sugarCallArgs
-syn match sugarCallName /\w\+\ze\s*(/ contained
-syn match sugarCallArgs /([^)]*)/ contained contains=sugarString,sugarNumber
+" ── Comments (highest priority — always wins) ───────────────
 
-" ============================================================
-" STYLE CONTEXT (inside style:)
-" ============================================================
+syn match sugarComment /^\s*# .*$/
 
-" CSS selectors
-syn match sugarCSSSelector /^\s*\zs[.#@:][a-zA-Z_:*-][a-zA-Z0-9_:/.+-]*/
-syn match sugarCSSSelector /^\s*\zs\*\s*$/
-syn match sugarCSSSelector /^\s*\zs[a-z][a-z0-9-]*\ze\s*:$/
+" ── Highlighting with explicit colors ───────────────────────
 
-" CSS properties
-syn keyword sugarCSSProp contained margin padding border background color font display
-syn keyword sugarCSSProp contained position width height top left right bottom overflow
-syn keyword sugarCSSProp contained opacity transform transition animation flex grid gap
-syn keyword sugarCSSProp contained align justify text box cursor outline resize content
-syn keyword sugarCSSProp contained visibility z-index float clear appearance
-syn match sugarCSSPropMatch /^\s*\zs[a-z-]\+\ze: / containedin=ALL
+" Use gui colors for truecolor terminals + cterm fallback
 
-" CSS values — colors
-syn match sugarCSSColor /#[0-9a-fA-F]\{3,8\}/
-syn match sugarCSSFunc /\<\(rgb\|rgba\|hsl\|hsla\|var\|calc\|min\|max\|clamp\|url\|linear-gradient\|radial-gradient\)\>/
-
-" CSS units
-syn match sugarCSSUnit /\<\d\+\(\.\d\+\)\?\(px\|em\|rem\|vh\|vw\|%\|s\|ms\|deg\|fr\)\>/
-
-" CSS at-rules
-syn match sugarAtRule /^\s*\zs@\(keyframes\|media\|import\|font-face\|supports\|layer\)\>/
-
-" CSS mixin definition: name = ():
-syn match sugarMixinDef /^\s*\zs\w\+\s*=\s*()\ze\s*:/
-
-" CSS mixin call: @name()
-syn match sugarMixinCall /@\w\+()/
-
-" ============================================================
-" SCRIPT CONTEXT (inside script:)
-" ============================================================
-
-" JS keywords
-syn keyword sugarJSKeyword if else for while do switch case break continue
-syn keyword sugarJSKeyword return throw try catch finally
-syn keyword sugarJSKeyword class extends new typeof instanceof in of
-syn keyword sugarJSKeyword async await yield import export default from
-syn keyword sugarJSKeyword const let var this super delete void
-
-" JS built-in objects
-syn keyword sugarJSBuiltin console document window Math JSON Object Array
-syn keyword sugarJSBuiltin String Number Boolean Date RegExp Map Set Promise
-syn keyword sugarJSBuiltin Error setTimeout setInterval requestAnimationFrame
-syn keyword sugarJSBuiltin parseInt parseFloat isNaN fetch localStorage
-
-" JS constants
-syn keyword sugarJSBool true false
-syn keyword sugarJSNull null undefined NaN Infinity
-
-" JS operators
-syn match sugarJSOp /[=!<>]=\?/
-syn match sugarJSOp /[+\-*/%]/
-syn match sugarJSOp /&&\|||\|!!/
-syn match sugarJSOp /=>/
-syn match sugarJSOp /\.\.\./
-syn match sugarJSOp /??\|?\./
-
-" JS function/method definition: name(args):
-syn match sugarJSFunc /\<\w\+\s*\ze([^)]*)\s*:/
-
-" JS property access
-syn match sugarJSProp /\.\zs\w\+/
-
-" ============================================================
-" HIGHLIGHTING
-" ============================================================
-
-" Comments
-hi def link sugarComment Comment
-
-" Strings and templates
-hi def link sugarString String
-hi def link sugarTemplateLit String
-hi def link sugarTemplateExpr Special
-hi def link sugarInterp Special
-
-" Numbers
-hi def link sugarNumber Number
-
-" HTML
-hi def link sugarTag Keyword
-hi def link sugarVoid Keyword
-hi def link sugarSlot PreProc
-hi def link sugarClass Type
-hi def link sugarID Identifier
-hi def link sugarAttrKey Label
-hi def link sugarAttrOp Operator
-hi def link sugarAttrVal String
-hi def link sugarBoolAttr Label
-hi def link sugarImplicitChild Delimiter
-hi def link sugarInlineTag Keyword
-hi def link sugarEntity SpecialChar
-hi def link sugarColon Delimiter
-
-" Template
-hi def link sugarTemplateFor Statement
-hi def link sugarTemplateForKw Repeat
-hi def link sugarTemplateOfIn Repeat
-hi def link sugarTemplateIf Conditional
-hi def link sugarTemplateIfKw Conditional
-
-" Components
-hi def link sugarComponentDef Function
-hi def link sugarComponentName Function
-hi def link sugarComponentEq Operator
-hi def link sugarComponentParams Special
-hi def link sugarParamName Identifier
-hi def link sugarComponentCall Function
-hi def link sugarCallName Function
-hi def link sugarCallArgs Special
-
-" CSS
-hi def link sugarCSSSelector Structure
-hi def link sugarCSSPropMatch Type
-hi def link sugarCSSColor Constant
-hi def link sugarCSSFunc Function
-hi def link sugarCSSUnit Number
-hi def link sugarAtRule PreProc
-hi def link sugarMixinDef Function
-hi def link sugarMixinCall PreProc
-
-" JS
-hi def link sugarJSKeyword Statement
-hi def link sugarJSBuiltin Identifier
-hi def link sugarJSBool Boolean
-hi def link sugarJSNull Constant
-hi def link sugarJSOp Operator
-hi def link sugarJSFunc Function
-hi def link sugarJSProp Identifier
+hi sugarComment     guifg=#6b7280 ctermfg=244  gui=italic cterm=italic
+hi sugarTag         guifg=#c084fc ctermfg=177
+hi sugarInlineTag   guifg=#c084fc ctermfg=177
+hi sugarSlot        guifg=#f472b6 ctermfg=212  gui=bold cterm=bold
+hi sugarClass       guifg=#22d3ee ctermfg=80
+hi sugarID          guifg=#fbbf24 ctermfg=220
+hi sugarAttr        guifg=#a5b4fc ctermfg=147
+hi sugarAttrEq      guifg=#6b7280 ctermfg=244
+hi sugarBoolAttr    guifg=#a5b4fc ctermfg=147
+hi sugarString      guifg=#86efac ctermfg=120
+hi sugarTemplateLit guifg=#86efac ctermfg=120
+hi sugarTemplateExpr guifg=#fbbf24 ctermfg=220
+hi sugarInterp      guifg=#fbbf24 ctermfg=220  gui=bold cterm=bold
+hi sugarNumber      guifg=#fdba74 ctermfg=216
+hi sugarEntity      guifg=#fdba74 ctermfg=216
+hi sugarImplicit    guifg=#6b7280 ctermfg=244  gui=bold cterm=bold
+hi sugarKeyword     guifg=#f472b6 ctermfg=212
+hi sugarKeywordOf   guifg=#f472b6 ctermfg=212
+hi sugarJSKw        guifg=#f472b6 ctermfg=212
+hi sugarBuiltin     guifg=#67e8f9 ctermfg=87
+hi sugarConstant    guifg=#fdba74 ctermfg=216
+hi sugarOp          guifg=#94a3b8 ctermfg=248
+hi sugarColon       guifg=#4b5563 ctermfg=240
+hi sugarText        guifg=#e5e7eb ctermfg=254
+hi sugarAtRule      guifg=#c084fc ctermfg=177  gui=bold cterm=bold
+hi sugarMixinCall   guifg=#a78bfa ctermfg=141
+hi sugarCSSColor    guifg=#fdba74 ctermfg=216
+hi sugarCSSFunc     guifg=#67e8f9 ctermfg=87
+hi sugarCSSUnit     guifg=#fdba74 ctermfg=216
+hi sugarFuncDef     guifg=#34d399 ctermfg=79   gui=bold cterm=bold
+hi sugarFuncDefEq   guifg=#6b7280 ctermfg=244
+hi sugarFuncCall    guifg=#34d399 ctermfg=79
+hi sugarParams      guifg=#e5e7eb ctermfg=254
+hi sugarParamName   guifg=#e5e7eb ctermfg=254
 
 let b:current_syntax = "sugar"
