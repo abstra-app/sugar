@@ -98,6 +98,11 @@ Compiles to:
 | JS if | `if x > 0:` | `if (x > 0) {` |
 | JS class | `class Foo:` | `class Foo {` |
 | JS object | indented key/values | `{key: value, ...}` |
+| Component def | `card = (title):` | *(reusable template)* |
+| Component call | `card("Users"):` | *(expands template)* |
+| Slot | `slot:` | *(replaced by call children)* |
+| CSS mixin def | `reset = ():` | *(reusable properties)* |
+| CSS mixin call | `@reset()` | *(expands properties)* |
 
 ## Documentation
 

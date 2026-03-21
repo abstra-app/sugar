@@ -2,7 +2,10 @@ import re
 from types import SimpleNamespace
 from typing import Any, List, Optional, Tuple
 
-from .ast import Element, ForBlock, IfBlock, Node, ScriptElement, StyleElement, StyleRule
+from .ast import (
+    ComponentCall, ComponentDef, Element, ForBlock, IfBlock, Node,
+    ScriptElement, StyleElement, StyleRule,
+)
 from .parser import parse_inline
 
 VOID_ELEMENTS = {
@@ -52,33 +55,58 @@ def _interpolate(text: str, data: dict) -> str:
 
 def compile(nodes: List[Node], data: Optional[dict] = None) -> str:
     ctx = _wrap_data(data) if data is not None else None
+    components: dict = {}
+    _collect_components(nodes, components)
     lines: List[str] = []
     for node in nodes:
-        _compile_node(node, 0, lines, ctx)
+        if isinstance(node, ComponentDef):
+            continue
+        _compile_node(node, 0, lines, ctx, components)
     return "\n".join(lines) + "\n"
 
 
+def _collect_components(nodes: list, components: dict) -> None:
+    for node in nodes:
+        if isinstance(node, ComponentDef):
+            components[node.name] = node
+        elif isinstance(node, Element):
+            _collect_components(node.children, components)
+
+
 def _compile_node(
-    node: Node, depth: int, lines: List[str], data: Optional[dict]
+    node: Node, depth: int, lines: List[str], data: Optional[dict],
+    components: Optional[dict] = None, slot: Optional[list] = None,
 ) -> None:
+    comps = components or {}
     if isinstance(node, StyleElement):
         _compile_style(node, depth, lines)
     elif isinstance(node, ScriptElement):
         _compile_script(node, depth, lines)
     elif isinstance(node, ForBlock):
-        _compile_for_block(node, depth, lines, data)
+        _compile_for_block(node, depth, lines, data, comps, slot)
     elif isinstance(node, IfBlock):
-        _compile_if_block(node, depth, lines, data)
+        _compile_if_block(node, depth, lines, data, comps, slot)
+    elif isinstance(node, ComponentDef):
+        pass
+    elif isinstance(node, ComponentCall):
+        _compile_component_call(node, depth, lines, data, comps)
     else:
-        _compile_element(node, depth, lines, data)
+        _compile_element(node, depth, lines, data, comps, slot)
 
 
 # --- HTML ---
 
 
 def _compile_element(
-    el: Element, depth: int, lines: List[str], data: Optional[dict]
+    el: Element, depth: int, lines: List[str], data: Optional[dict],
+    components: Optional[dict] = None, slot: Optional[list] = None,
 ) -> None:
+    # slot replacement
+    if el.tag == "slot" and slot:
+        for s in slot:
+            _compile_node(s, depth, lines, data, components)
+        return
+
     indent = "\t" * depth
     opening = _build_opening_tag(el.tag, el.classes, el.attributes, data)
 
@@ -102,7 +130,7 @@ def _compile_element(
 
     lines.append(f"{indent}{opening}")
     for child in el.children:
-        _compile_node(child, depth + 1, lines, data)
+        _compile_node(child, depth + 1, lines, data, components, slot)
     lines.append(f"{indent}</{el.tag}>")
 
 
@@ -129,7 +157,8 @@ def _compile_element_inline(el: Element, data: Optional[dict]) -> str:
 
 
 def _compile_for_block(
-    block: ForBlock, depth: int, lines: List[str], data: Optional[dict]
+    block: ForBlock, depth: int, lines: List[str], data: Optional[dict],
+    components: Optional[dict] = None, slot: Optional[list] = None,
 ) -> None:
     if data is None:
         return
@@ -137,17 +166,44 @@ def _compile_for_block(
     for item in iterable:
         child_data = {**data, block.var: _wrap(item)}
         for child in block.children:
-            _compile_node(child, depth, lines, child_data)
+            _compile_node(child, depth, lines, child_data, components, slot)
 
 
 def _compile_if_block(
-    block: IfBlock, depth: int, lines: List[str], data: Optional[dict]
+    block: IfBlock, depth: int, lines: List[str], data: Optional[dict],
+    components: Optional[dict] = None, slot: Optional[list] = None,
 ) -> None:
     if data is None:
         return
     if _eval_expr(block.condition, data):
         for child in block.children:
-            _compile_node(child, depth, lines, data)
+            _compile_node(child, depth, lines, data, components, slot)
+
+
+# --- Components ---
+
+
+def _compile_component_call(
+    call: ComponentCall, depth: int, lines: List[str],
+    data: Optional[dict], components: dict,
+) -> None:
+    comp = components.get(call.name)
+    if comp is None:
+        return
+
+    # bind args to params
+    args = [a.strip() for a in call.args_raw.split(",") if a.strip()] if call.args_raw else []
+    call_data = dict(data) if data else {}
+    for param, arg in zip(comp.params, args):
+        if data is not None:
+            call_data[param] = _eval_expr(arg, data)
+        else:
+            call_data[param] = arg
+
+    call_data_ctx = call_data if data is not None else None
+
+    for child in comp.children:
+        _compile_node(child, depth, lines, call_data_ctx, components, call.children)
 
 
 # --- Opening tags ---
@@ -175,28 +231,56 @@ def _build_opening_tag(
 def _compile_style(node: StyleElement, depth: int, lines: List[str]) -> None:
     indent = "\t" * depth
     opening = _build_opening_tag("style", node.classes, node.attributes)
-    css = _compile_style_rules(node.rules, depth + 1)
+
+    # collect CSS mixins
+    mixins: dict = {}
+    for rule in node.rules:
+        m = re.match(r"(\w+)\s*=\s*\(([^)]*)\)$", rule.selector)
+        if m:
+            mixins[m.group(1)] = rule
+
+    css = _compile_style_rules(node.rules, depth + 1, mixins)
     lines.append(f"{indent}{opening}")
     lines.extend(css)
     lines.append(f"{indent}</style>")
 
 
-def _compile_style_rules(rules: List[StyleRule], depth: int) -> List[str]:
+def _compile_style_rules(
+    rules: List[StyleRule], depth: int, mixins: Optional[dict] = None
+) -> List[str]:
     lines: List[str] = []
     indent = "\t" * depth
+    mx = mixins or {}
 
     for rule in rules:
+        # skip mixin definitions
+        if re.match(r"\w+\s*=\s*\([^)]*\)$", rule.selector):
+            continue
+
         if rule.selector and (rule.properties or rule.children):
             lines.append(f"{indent}{rule.selector} {{")
             inner = "\t" * (depth + 1)
             for p, v in rule.properties:
-                lines.append(f"{inner}{p}: {v};")
+                # expand mixin calls: @name()
+                mm = re.match(r"@(\w+)\(([^)]*)\)$", p)
+                if mm and mm.group(1) in mx:
+                    mixin = mx[mm.group(1)]
+                    for mp, mv in mixin.properties:
+                        lines.append(f"{inner}{mp}: {mv};")
+                else:
+                    lines.append(f"{inner}{p}: {v};")
             for child in rule.children:
-                lines.extend(_compile_style_rules([child], depth + 1))
+                lines.extend(_compile_style_rules([child], depth + 1, mx))
             lines.append(f"{indent}}}")
         elif rule.properties:
             for p, v in rule.properties:
-                lines.append(f"{indent}{p}: {v};")
+                mm = re.match(r"@(\w+)\(([^)]*)\)$", p)
+                if mm and mm.group(1) in mx:
+                    mixin = mx[mm.group(1)]
+                    for mp, mv in mixin.properties:
+                        lines.append(f"{indent}{mp}: {mv};")
+                else:
+                    lines.append(f"{indent}{p}: {v};")
 
     return lines
 

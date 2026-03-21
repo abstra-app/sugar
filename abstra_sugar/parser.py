@@ -2,7 +2,10 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import re
 
-from .ast import Element, ForBlock, IfBlock, Node, ScriptElement, StyleElement, StyleRule
+from .ast import (
+    ComponentCall, ComponentDef, Element, ForBlock, IfBlock, Node,
+    ScriptElement, StyleElement, StyleRule,
+)
 from .tokens import Token
 
 HTML_TAGS = {
@@ -114,6 +117,22 @@ def _build_tree(tokens: List[Token]) -> list:
 def _parse_node(item: dict) -> Node:
     token: Token = item["token"]
     children: list = item["children"]
+
+    # component definition: name = (params):
+    m = re.match(r"(\w+)\s*=\s*\(([^)]*)\)$", token.head)
+    if m and token.has_colon:
+        name, params_str = m.groups()
+        params = [p.strip() for p in params_str.split(",") if p.strip()]
+        child_nodes = [_parse_node(c) for c in children]
+        return ComponentDef(name=name, params=params, children=child_nodes)
+
+    # component call: name(args) where name is not an HTML tag
+    m = re.match(r"(\w+)\s*\(([^)]*)\)$", token.head)
+    if m and m.group(1) not in HTML_TAGS:
+        name = m.group(1)
+        args_raw = m.group(2)
+        child_nodes = [_parse_node(c) for c in children]
+        return ComponentCall(name=name, args_raw=args_raw, children=child_nodes)
 
     # for/if blocks in HTML context
     m = re.match(r"for\s+(.+?)\s+(of|in)\s+(.+)", token.head)

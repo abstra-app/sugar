@@ -17,6 +17,20 @@ class IfBlock:
 
 
 @dataclass
+class ComponentDef:
+    name: str
+    params: List[str]
+    children: List["HtmlChild"] = field(default_factory=list)
+
+
+@dataclass
+class ComponentCall:
+    name: str
+    args_raw: str
+    children: List["HtmlChild"] = field(default_factory=list)  # slot content
+
+
+@dataclass
 class Element:
     tag: str
     classes: List[str] = field(default_factory=list)
@@ -25,7 +39,7 @@ class Element:
     children: List["HtmlChild"] = field(default_factory=list)
 
 
-HtmlChild = Union[Element, ForBlock, IfBlock]
+HtmlChild = Union[Element, ForBlock, IfBlock, ComponentCall]
 
 
 @dataclass
@@ -49,4 +63,4 @@ class ScriptElement:
     body: str = ""
 
 
-Node = Union[Element, StyleElement, ScriptElement, ForBlock, IfBlock]
+Node = Union[Element, StyleElement, ScriptElement, ForBlock, IfBlock, ComponentDef, ComponentCall]
