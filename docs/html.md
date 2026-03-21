@@ -95,15 +95,27 @@ p: This is a paragraph
 
 ## Interpolation
 
-Use `{expr}` to interpolate JavaScript expressions in dynamic contexts (for/if blocks):
+Use `{expr}` to interpolate Python expressions when data is provided:
 
-```sugar
-ul#list:
-	for user of users:
-		li: {user.name} ({user.email})
+```python
+sugar("h1: Hello {name}", {"name": "World"})
+# → <h1>Hello World</h1>
 ```
 
-Inside dynamic blocks, `{expr}` compiles to `${expr}` in template literals, enabling dynamic content.
+Works in text content and attribute values:
+
+```sugar
+a href=/users/{user.id}: {user.name}
+```
+
+Expressions are evaluated against the data dict. Dot access works on nested dicts:
+
+```python
+sugar("p: {user.name}", {"user": {"name": "Alice"}})
+# → <p>Alice</p>
+```
+
+Built-in functions like `len`, `str`, `int`, `sorted`, etc. are available in expressions.
 
 ## Nesting
 
@@ -141,45 +153,45 @@ p: span.bold: Important
 <p><span class="bold">Important</span></p>
 ```
 
-## Dynamic Rendering
+## Templating
+
+Sugar supports server-side templating when a data dict is provided to `sugar()`.
 
 ### for loops
 
-Use `for` inside an HTML element to generate repeated content:
+Iterate over collections to generate repeated HTML:
 
 ```sugar
-ul#users:
+ul:
 	for user of users:
 		li: {user.name}
 ```
 
-Compiles to a `<script>` that populates the element via `innerHTML`:
+```python
+sugar(template, {"users": [{"name": "Alice"}, {"name": "Bob"}]})
+```
 
 ```html
-<ul id="users"></ul>
-<script>
-	(function() {
-		let _t = "";
-		for (let user of users) {
-			_t += `<li>${user.name}</li>`;
-		}
-		document.getElementById("users").innerHTML = _t;
-	})();
-</script>
+<ul>
+	<li>Alice</li>
+	<li>Bob</li>
+</ul>
 ```
 
 ### if conditionals
 
+Conditionally render elements:
+
 ```sugar
-#message:
-	if error:
-		p.text-red: {error}
+div:
+	if show_message:
+		p: Hello!
 ```
 
 ### Nested loops
 
 ```sugar
-table#data:
+table:
 	for group of groups:
 		tr:
 			th: {group.name}
@@ -192,12 +204,10 @@ table#data:
 ### Interpolation in attributes
 
 ```sugar
-#links:
+div:
 	for page of pages:
 		a href=/page/{page.id}: {page.title}
 ```
-
-Compiles to `<a href="/page/${page.id}">${page.title}</a>` inside the template literal.
 
 ## Void Elements
 

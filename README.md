@@ -13,7 +13,11 @@ pip install abstra-sugar
 ```python
 from abstra_sugar import sugar
 
+# static
 html = sugar(open("page.sugar").read())
+
+# with data (templating)
+html = sugar(open("page.sugar").read(), {"users": [...], "title": "Home"})
 ```
 
 ## Example
@@ -79,12 +83,12 @@ Compiles to:
 | Class | `div.foo.bar:` | `<div class="foo bar"></div>` |
 | Attribute | `a href=/about:` | `<a href="/about"></a>` |
 | Text | `h1: Hello` | `<h1>Hello</h1>` |
-| Interpolation | `li: {user.name}` | `<li>${user.name}</li>` *(in dynamic blocks)* |
+| Interpolation | `li: {user.name}` | `<li>Alice</li>` *(with data)* |
 | Inline element | `td: a href=#: Click` | `<td><a href="#">Click</a></td>` |
 | Void element | `hr:` | `<hr>` |
 | Comment | `# ignored` | *(removed)* |
-| HTML for loop | `for x of arr:` | generates `<script>` with `.map()` |
-| HTML if | `if cond:` | generates `<script>` with conditional |
+| Template for | `for x of arr:` | repeats children *(with data)* |
+| Template if | `if cond:` | conditional render *(with data)* |
 | CSS property | `color: red` | `color: red;` |
 | CSS selector | `.foo:` | `.foo {` |
 | JS function | `greet(x):` | `function greet(x) {` |

@@ -1,0 +1,21 @@
+{
+	"title": "Dashboard",
+	"users": [
+		{"name": "Alice", "email": "alice@co.com"},
+		{"name": "Bob", "email": "bob@co.com"}
+	],
+	"show_footer": true,
+	"groups": [
+		{
+			"name": "Group A",
+			"items": [
+				{"key": "a1", "value": "v1"},
+				{"key": "a2", "value": "v2"}
+			]
+		}
+	],
+	"pages": [
+		{"id": 1, "title": "Home"},
+		{"id": 2, "title": "About"}
+	]
+}

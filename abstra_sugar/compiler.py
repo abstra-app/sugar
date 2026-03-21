@@ -1,5 +1,6 @@
 import re
-from typing import List, Tuple
+from types import SimpleNamespace
+from typing import Any, List, Optional, Tuple
 
 from .ast import Element, ForBlock, IfBlock, Node, ScriptElement, StyleElement, StyleRule
 from .parser import parse_inline
@@ -10,93 +11,103 @@ VOID_ELEMENTS = {
 }
 
 
-_id_counter = 0
+# --- Data helpers for templating ---
 
 
-def _auto_id() -> str:
-    global _id_counter
-    _id_counter += 1
-    return f"_s{_id_counter}"
+def _wrap(val: Any) -> Any:
+    if isinstance(val, dict):
+        return SimpleNamespace(**{k: _wrap(v) for k, v in val.items()})
+    if isinstance(val, list):
+        return [_wrap(v) for v in val]
+    return val
 
 
-def compile(nodes: List[Node]) -> str:
-    global _id_counter
-    _id_counter = 0
+def _wrap_data(data: dict) -> dict:
+    return {k: _wrap(v) for k, v in data.items()}
+
+
+_SAFE_BUILTINS = {
+    "len": len, "str": str, "int": int, "float": float, "bool": bool,
+    "list": list, "dict": dict, "tuple": tuple, "set": set,
+    "range": range, "enumerate": enumerate, "zip": zip, "map": map,
+    "filter": filter, "sorted": sorted, "reversed": reversed,
+    "min": min, "max": max, "sum": sum, "abs": abs, "round": round,
+    "isinstance": isinstance, "hasattr": hasattr, "getattr": getattr,
+    "True": True, "False": False, "None": None,
+}
+
+
+def _eval_expr(expr: str, data: dict) -> Any:
+    return eval(expr, {"__builtins__": _SAFE_BUILTINS}, data)
+
+
+def _interpolate(text: str, data: dict) -> str:
+    def replace(m: re.Match) -> str:
+        return str(_eval_expr(m.group(1), data))
+    return re.sub(r"\{([^}]+)\}", replace, text)
+
+
+# --- Main entry ---
+
+
+def compile(nodes: List[Node], data: Optional[dict] = None) -> str:
+    ctx = _wrap_data(data) if data is not None else None
     lines: List[str] = []
     for node in nodes:
-        _compile_node(node, 0, lines)
+        _compile_node(node, 0, lines, ctx)
     return "\n".join(lines) + "\n"
 
 
-def _compile_node(node: Node, depth: int, lines: List[str]) -> None:
+def _compile_node(
+    node: Node, depth: int, lines: List[str], data: Optional[dict]
+) -> None:
     if isinstance(node, StyleElement):
         _compile_style(node, depth, lines)
     elif isinstance(node, ScriptElement):
         _compile_script(node, depth, lines)
-    elif isinstance(node, (ForBlock, IfBlock)):
-        # top-level dynamic block — wrap in a div
-        wrapper = Element(tag="div", attributes={"id": _auto_id()}, children=[node])
-        _compile_element(wrapper, depth, lines)
+    elif isinstance(node, ForBlock):
+        _compile_for_block(node, depth, lines, data)
+    elif isinstance(node, IfBlock):
+        _compile_if_block(node, depth, lines, data)
     else:
-        _compile_element(node, depth, lines)
+        _compile_element(node, depth, lines, data)
 
 
 # --- HTML ---
 
 
-def _has_dynamic(children: list) -> bool:
-    return any(isinstance(c, (ForBlock, IfBlock)) for c in children)
-
-
-def _compile_element(el: Element, depth: int, lines: List[str]) -> None:
+def _compile_element(
+    el: Element, depth: int, lines: List[str], data: Optional[dict]
+) -> None:
     indent = "\t" * depth
-    opening = _build_opening_tag(el.tag, el.classes, el.attributes)
+    opening = _build_opening_tag(el.tag, el.classes, el.attributes, data)
 
     if el.tag in VOID_ELEMENTS:
         lines.append(f"{indent}{opening}")
         return
 
     if el.text:
+        text = _interpolate(el.text, data) if data is not None else el.text
         inline = parse_inline(el.text)
         if inline:
-            inner = _compile_element_inline(inline)
+            inner = _compile_element_inline(inline, data)
             lines.append(f"{indent}{opening}{inner}</{el.tag}>")
         else:
-            lines.append(f"{indent}{opening}{el.text}</{el.tag}>")
+            lines.append(f"{indent}{opening}{text}</{el.tag}>")
         return
 
     if not el.children:
         lines.append(f"{indent}{opening}</{el.tag}>")
         return
 
-    # dynamic children → generate script
-    if _has_dynamic(el.children):
-        if "id" not in el.attributes:
-            el.attributes["id"] = _auto_id()
-        el_id = el.attributes["id"]
-        opening = _build_opening_tag(el.tag, el.classes, el.attributes)
-        lines.append(f"{indent}{opening}</{el.tag}>")
-        lines.append(f"{indent}<script>")
-        si = indent + "\t"
-        lines.append(f"{si}(function() {{")
-        lines.append(f"{si}\tlet _t = \"\";")
-        for child in el.children:
-            _compile_dynamic_child(child, si + "\t", lines)
-        lines.append(
-            f'{si}\tdocument.getElementById("{el_id}").innerHTML = _t;'
-        )
-        lines.append(f"{si}}})();")
-        lines.append(f"{indent}</script>")
-        return
-
     lines.append(f"{indent}{opening}")
     for child in el.children:
-        _compile_node(child, depth + 1, lines)
+        _compile_node(child, depth + 1, lines, data)
     lines.append(f"{indent}</{el.tag}>")
 
 
-def _compile_element_inline(el: Element) -> str:
-    opening = _build_opening_tag(el.tag, el.classes, el.attributes)
+def _compile_element_inline(el: Element, data: Optional[dict]) -> str:
+    opening = _build_opening_tag(el.tag, el.classes, el.attributes, data)
 
     if el.tag in VOID_ELEMENTS:
         return opening
@@ -106,63 +117,45 @@ def _compile_element_inline(el: Element) -> str:
     if el.text:
         inline = parse_inline(el.text)
         if inline:
-            result += _compile_element_inline(inline)
+            result += _compile_element_inline(inline, data)
         else:
-            result += el.text
+            result += _interpolate(el.text, data) if data is not None else el.text
 
     result += f"</{el.tag}>"
     return result
 
 
-# --- Dynamic rendering (for/if in HTML) ---
+# --- Templating (for/if in HTML) ---
 
 
-def _interpolate(text: str) -> str:
-    return re.sub(r"\{([^}]+)\}", r"${\1}", text)
+def _compile_for_block(
+    block: ForBlock, depth: int, lines: List[str], data: Optional[dict]
+) -> None:
+    if data is None:
+        return
+    iterable = _eval_expr(block.iterable, data)
+    for item in iterable:
+        child_data = {**data, block.var: _wrap(item)}
+        for child in block.children:
+            _compile_node(child, depth, lines, child_data)
 
 
-def _compile_dynamic_child(child, indent: str, lines: List[str]) -> None:
-    if isinstance(child, ForBlock):
-        lines.append(
-            f"{indent}for (let {child.var} {child.keyword} {child.iterable}) {{"
-        )
-        for sub in child.children:
-            _compile_dynamic_child(sub, indent + "\t", lines)
-        lines.append(f"{indent}}}")
-    elif isinstance(child, IfBlock):
-        lines.append(f"{indent}if ({child.condition}) {{")
-        for sub in child.children:
-            _compile_dynamic_child(sub, indent + "\t", lines)
-        lines.append(f"{indent}}}")
-    elif isinstance(child, Element):
-        template = _compile_template_element(child)
-        lines.append(f"{indent}_t += `{template}`;")
+def _compile_if_block(
+    block: IfBlock, depth: int, lines: List[str], data: Optional[dict]
+) -> None:
+    if data is None:
+        return
+    if _eval_expr(block.condition, data):
+        for child in block.children:
+            _compile_node(child, depth, lines, data)
 
 
-def _compile_template_element(el: Element) -> str:
-    opening = _build_template_tag(el.tag, el.classes, el.attributes)
-
-    if el.tag in VOID_ELEMENTS:
-        return opening
-
-    result = opening
-
-    if el.text:
-        inline = parse_inline(el.text)
-        if inline:
-            result += _compile_template_element(inline)
-        else:
-            result += _interpolate(el.text)
-    else:
-        for child in el.children:
-            if isinstance(child, Element):
-                result += _compile_template_element(child)
-
-    result += f"</{el.tag}>"
-    return result
+# --- Opening tags ---
 
 
-def _build_template_tag(tag: str, classes: list, attrs: dict) -> str:
+def _build_opening_tag(
+    tag: str, classes: list, attrs: dict, data: Optional[dict] = None
+) -> str:
     parts = [f"<{tag}"]
     if classes:
         parts.append(f' class="{" ".join(classes)}"')
@@ -170,20 +163,8 @@ def _build_template_tag(tag: str, classes: list, attrs: dict) -> str:
         if v is True:
             parts.append(f" {k}")
         else:
-            parts.append(f' {k}="{_interpolate(str(v))}"')
-    parts.append(">")
-    return "".join(parts)
-
-
-def _build_opening_tag(tag: str, classes: list, attrs: dict) -> str:
-    parts = [f"<{tag}"]
-    if classes:
-        parts.append(f' class="{" ".join(classes)}"')
-    for k, v in attrs.items():
-        if v is True:
-            parts.append(f" {k}")
-        else:
-            parts.append(f' {k}="{v}"')
+            val = _interpolate(str(v), data) if data is not None else str(v)
+            parts.append(f' {k}="{val}"')
     parts.append(">")
     return "".join(parts)
 
@@ -264,12 +245,10 @@ def _compile_script_body(
             i += 1
             continue
 
-        # collect trailing blanks so closing braces go before them
         trailing_blanks: List[str] = []
         while out and out[-1] == "":
             trailing_blanks.append(out.pop())
 
-        # close blocks at >= current indent
         while block_stack and block_stack[-1][0] >= indent:
             closed_indent, _ = block_stack.pop()
             out.append("\t" * (base_depth + closed_indent) + "}")
@@ -286,7 +265,6 @@ def _compile_script_body(
             js_header = _compile_inline_arrows(js_header)
 
             if js_header == header and not is_class:
-                # object literal — compile children inline
                 obj_str, i = _compile_object_inline(parsed, i + 1, indent)
                 if " = " in header:
                     lhs, rhs = header.split(" = ", 1)
@@ -308,7 +286,6 @@ def _compile_script_body(
 
         i += 1
 
-    # close remaining blocks
     trailing_blanks = []
     while out and out[-1] == "":
         trailing_blanks.append(out.pop())
@@ -379,7 +356,6 @@ def _compile_script_line(line: str, in_class: bool) -> str:
     if m:
         return f"class {m.group(1)}"
 
-    # try / catch / finally
     if line == "try":
         return "try"
     m = re.match(r"catch\s*\(([^)]*)\)$", line)
@@ -388,12 +364,10 @@ def _compile_script_line(line: str, in_class: bool) -> str:
     if line == "finally":
         return "finally"
 
-    # arrow function: (params)
     m = re.match(r"\(([^)]*)\)$", line)
     if m:
         return f"({m.group(1)}) =>"
 
-    # named function / method
     m = re.match(r"(async\s+)?(\w+)\s*\(([^)]*)\)$", line)
     if m:
         async_prefix = m.group(1) or ""
@@ -404,7 +378,6 @@ def _compile_script_line(line: str, in_class: bool) -> str:
         else:
             return f"{async_prefix}function {name}({args})"
 
-    # trailing arrow: expr(... , (params)) → expr(... , (params) =>)
     if line.endswith(")"):
         depth = 0
         for i in range(len(line) - 1, -1, -1):
