@@ -1,6 +1,7 @@
 import json
 import pathlib
 
+from .check import check_source
 from .sugar import sugar
 
 SNAPSHOTS_DIR = pathlib.Path(__file__).parent / "snapshots"
@@ -24,5 +25,12 @@ def test_snapshots():
     for sugar_file, html_file, data in pairs:
         source = sugar_file.read_text()
         expected = html_file.read_text()
+
+        warnings = check_source(source)
+        assert warnings == [], (
+            f"Warnings in {sugar_file.name}:\n"
+            + "\n".join(f"  line {w['line']}: {w['message']}" for w in warnings)
+        )
+
         result = sugar(source, data)
         assert result == expected, f"Snapshot mismatch: {sugar_file.name}"
