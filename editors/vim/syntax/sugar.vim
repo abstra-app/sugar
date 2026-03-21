@@ -24,8 +24,9 @@ syn match sugarTemplateExpr /\${[^}]*}/ contained
 
 " ── 4. Numbers ─────────────────────────────────────────────
 
-syn match sugarNumber /\<\d\+\(\.\d\+\)\?\>/
-syn match sugarCSSUnit /\d\zs\(px\|em\|rem\|vh\|vw\|%\|s\|ms\|deg\|fr\)\>/
+" Only match numbers after whitespace, =, (, ,, : or start of line (not inside class names like .gray-400)
+syn match sugarNumber /\([\s=:(,]\|^\)\zs\d\+\(\.\d\+\)\?\>/
+syn match sugarCSSUnit /\([\s=:(,]\|^\)\d\+\(\.\d\+\)\?\zs\(px\|em\|rem\|vh\|vw\|%\|s\|ms\|deg\|fr\)\>/
 
 " ── 5. HTML entities ───────────────────────────────────────
 
