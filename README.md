@@ -5,7 +5,7 @@ A template language that compiles to HTML, CSS, and JavaScript. Combines the bes
 ## Install
 
 ```bash
-pip install abstra_sugar
+pip install abstra-sugar
 ```
 
 ## Usage
