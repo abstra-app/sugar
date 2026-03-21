@@ -24,10 +24,10 @@ syn match sugarTemplateExpr /\${[^}]*}/ contained
 
 " ── 4. Numbers ─────────────────────────────────────────────
 
-" Match numbers after whitespace, operators, brackets, parens, =, :, , or start of line
-" but NOT after - inside class names (like .gray-400)
-syn match sugarNumber /\([\s=:(,\[*\/+><!?&|]\|^\)\zs\d\+\(\.\d\+\)\?\>/
-syn match sugarCSSUnit /\([\s=:(,\[*\/+><!?&|]\|^\)\d\+\(\.\d\+\)\?\zs\(px\|em\|rem\|vh\|vw\|%\|s\|ms\|deg\|fr\)\>/
+" Match numbers everywhere EXCEPT after a hyphen (to avoid coloring .gray-400)
+syn match sugarNumber /[^-]\zs\<\d\+\(\.\d\+\)\?\>/
+syn match sugarNumber /^\s*\zs\d\+\(\.\d\+\)\?\>/
+syn match sugarCSSUnit /\<\d\+\(\.\d\+\)\?\zs\(px\|em\|rem\|vh\|vw\|%\|s\|ms\|deg\|fr\)\>/
 
 " ── 5. HTML entities ───────────────────────────────────────
 
