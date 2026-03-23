@@ -1,5 +1,9 @@
 # Sugar
 
+<p align="center">
+  <img src="sugar.png" alt="Sugar" width="480">
+</p>
+
 A concise language that compiles to HTML, CSS, and JavaScript — designed to reduce token consumption when generating or processing web code with LLMs.
 
 Sugar achieves ~1.28x compression over equivalent HTML/JS output, meaning LLMs can produce the same result using ~22% fewer tokens. It combines ideas from Pug, Stylus, and CoffeeScript into a single indentation-based syntax.
