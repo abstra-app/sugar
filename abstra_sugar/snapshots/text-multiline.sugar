@@ -1,0 +1,9 @@
+html:
+ body:
+  script:
+   name = "World"
+   greeting = text!:
+    Hello, {name}!
+    Welcome to Sugar.
+    This is line three.
+   alert(greeting)

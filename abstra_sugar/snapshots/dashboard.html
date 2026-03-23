@@ -1,653 +1,686 @@
+<!--=== COMPONENTS === -->
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width,initial-scale=1.0">
-		<title>Finance Dashboard</title>
-		<script src="https://cdn.tailwindcss.com">
-		</script>
-		<script>
-			tailwind.config = {theme: {extend: {colors: {primary: "#6366f1", accent: "#22d3ee", danger: "#ef4444", success: "#10b981", warn: "#f59e0b"}}}};
-		</script>
-		<style>
-			body {
-				font-family: Inter, system-ui, sans-serif;
-			}
-			.modal-backdrop {
-				background: rgba(0, 0, 0, 0.5);
-				backdrop-filter: blur(4px);
-			}
-			.fade-in {
-				animation: fadeIn 0.2s ease-out;
-			}
-			@keyframes fadeIn {
-				from {
-					opacity: 0;
-					transform: scale(0.95);
-				}
-				to {
-					opacity: 1;
-					transform: scale(1);
-				}
-			}
-			.slide-in {
-				animation: slideIn 0.3s ease-out;
-			}
-			@keyframes slideIn {
-				from {
-					transform: translateX(100%);
-				}
-				to {
-					transform: translateX(0);
-				}
-			}
-			::-webkit-scrollbar {
-				width: 6px;
-			}
-			::-webkit-scrollbar-thumb {
-				background: #374151;
-				border-radius: 3px;
-			}
-		</style>
-	</head>
-	<body class="bg-gray-950 text-white min-h-screen">
-		<div class="fixed inset-y-0 left-0 w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-30" id="sidebar">
-			<div class="p-6 border-b border-gray-800">
-				<div class="flex items-center gap-3">
-					<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-lg font-bold">F</div>
-					<div>
-						<div class="font-bold text-lg">FinDash</div>
-						<div class="text-xs text-gray-400">Pro Edition</div>
-					</div>
-				</div>
-			</div>
-			<nav class="flex-1 p-4 space-y-1">
-				<a class="flex items-center gap-3 px-4 py-2 5 rounded-lg bg-primary bg-opacity-20 text-primary font-medium" href="#">
-					<span>&#9632;</span>
-					<span>Dashboard</span>
-				</a>
-				<a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
-					<span>&#9650;</span>
-					<span>Analytics</span>
-				</a>
-				<a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
-					<span>&#9660;</span>
-					<span>Transactions</span>
-				</a>
-				<a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
-					<span>&#9670;</span>
-					<span>Investments</span>
-				</a>
-				<a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
-					<span>&#9672;</span>
-					<span>Budget</span>
-				</a>
-				<a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
-					<span>&#9881;</span>
-					<span>Settings</span>
-				</a>
-			</nav>
-			<div class="p-4 border-t border-gray-800">
-				<div class="flex items-center gap-3 px-2">
-					<div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-bold">JD</div>
-					<div class="flex-1 min-w-0">
-						<div class="text-sm font-medium truncate">John Doe</div>
-						<div class="text-xs text-gray-400">Premium Plan</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="ml-64 flex flex-col min-h-screen">
-			<header class="sticky top-0 bg-gray-950 bg-opacity-80 backdrop-blur-lg border-b border-gray-800 z-20">
-				<div class="flex items-center justify-between px-8 py-4">
-					<div>
-						<h1 class="text-2xl font-bold">Dashboard</h1>
-						<p class="text-sm text-gray-400">Welcome back, John. Here's your financial overview.</p>
-					</div>
-					<div class="flex items-center gap-4">
-						<div class="relative">
-							<input class="bg-gray-800 text-sm rounded-lg pl-10 pr-4 py-2 w-64 border border-gray-700 focus:border-primary focus:outline-none transition" placeholder="Search..." type="text">
-							<span class="absolute left-3 top-2 text-gray-400">&#128269;</span>
-						</div>
-						<button class="relative p-2 rounded-lg hover:bg-gray-800 transition" onclick="toggleNotifications()">
-							<span class="text-xl">&#128276;</span>
-							<span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
-						</button>
-						<button class="px-4 py-2 bg-primary rounded-lg text-sm font-medium hover:bg-opacity-80 transition" onclick="openModal('addTransaction')">+ New Transaction</button>
-					</div>
-				</div>
-			</header>
-			<main class="flex-1 p-8">
-				<div class="grid grid-cols-4 gap-6 mb-8" id="kpi-cards"></div>
-				<div class="grid grid-cols-3 gap-6 mb-8">
-					<div class="col-span-2">
-						<div class="bg-gray-900 rounded-2xl border border-gray-800 p-6">
-							<div class="flex items-center justify-between mb-6">
-								<div>
-									<h3 class="font-semibold text-lg">Revenue Overview</h3>
-									<p class="text-sm text-gray-400">Monthly revenue and expenses</p>
-								</div>
-								<div class="flex gap-2">
-									<button class="px-3 py-1 text-xs rounded-lg bg-primary bg-opacity-20 text-primary font-medium">1Y</button>
-									<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">6M</button>
-									<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">1M</button>
-								</div>
-							</div>
-							<canvas id="revenueChart" height="300"></canvas>
-						</div>
-					</div>
-					<div class="bg-gray-900 rounded-2xl border border-gray-800 p-6">
-						<h3 class="font-semibold text-lg mb-2">Spending Categories</h3>
-						<p class="text-sm text-gray-400 mb-6">This month's breakdown</p>
-						<canvas id="donutChart" height="200"></canvas>
-						<div class="mt-4 space-y-2" id="donut-legend"></div>
-					</div>
-				</div>
-				<div class="grid grid-cols-3 gap-6 mb-8">
-					<div class="col-span-2">
-						<div class="bg-gray-900 rounded-2xl border border-gray-800">
-							<div class="flex items-center justify-between p-6 border-b border-gray-800">
-								<h3 class="font-semibold text-lg">Recent Transactions</h3>
-								<div class="flex gap-2">
-									<button class="px-3 py-1 5 text-xs rounded-lg bg-gray-800 text-white font-medium">All</button>
-									<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">Income</button>
-									<button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">Expense</button>
-								</div>
-							</div>
-						</div>
-						<div id="transactions-list"></div>
-					</div>
-					<div class="bg-gray-900 rounded-2xl border border-gray-800">
-						<div class="flex items-center justify-between p-6 border-b border-gray-800">
-							<h3 class="font-semibold text-lg">Activity Feed</h3>
-							<slot></slot>
-						</div>
-					</div>
-					<div class="p-4 space-y-4 max-h-96 overflow-y-auto" id="activity-feed"></div>
-				</div>
-				<div class="bg-gray-900 rounded-2xl border border-gray-800">
-					<div class="flex items-center justify-between p-6 border-b border-gray-800">
-						<h3 class="font-semibold text-lg">Investment Portfolio</h3>
-						<button class="px-4 py-2 text-sm bg-gray-800 rounded-lg hover:bg-gray-700 transition" onclick="openModal('addInvestment')">+ Add Position</button>
-					</div>
-				</div>
-				<div class="overflow-x-auto">
-					<table class="w-full">
-						<thead>
-							<tr class="text-left text-xs text-gray-400 uppercase">
-								<td class="px-6 py-4">Asset</td>
-								<td class="px-6 py-4">Shares</td>
-								<td class="px-6 py-4">Avg Cost</td>
-								<td class="px-6 py-4">Current</td>
-								<td class="px-6 py-4">P&L</td>
-								<td class="px-6 py-4">Allocation</td>
-								<td class="px-6 py-4">Actions</td>
-							</tr>
-						</thead>
-						<tbody id="portfolio-body"></tbody>
-					</table>
-				</div>
-				<div class="bg-gray-900 rounded-2xl border border-gray-800">
-					<div class="flex items-center justify-between p-6 border-b border-gray-800">
-						<h3 class="font-semibold text-lg">Monthly Budget</h3>
-						<p class="text-sm text-gray-400">March 2026</p>
-					</div>
-				</div>
-				<div class="p-6 grid grid-cols-2 gap-6" id="budget-bars"></div>
-			</main>
-		</div>
-		<div class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center" id="modal-addTransaction">
-			<div class="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-lg fade-in">
-				<div class="flex items-center justify-between p-6 border-b border-gray-800">
-					<h3 class="font-semibold text-lg">New Transaction</h3>
-					<button class="text-gray-400 hover:text-white text-2xl leading-none" onclick="closeModal('addTransaction')">&times;</button>
-				</div>
-				<div class="p-6 space-y-4">
-					<div>
-						<label class="block text-sm text-gray-400 mb-1">Description</label>
-						<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="text" placeholder="Enter description" id="tx-desc">
-					</div>
-					<div class="grid grid-cols-2 gap-4">
-						<div>
-							<label class="block text-sm text-gray-400 mb-1">Amount</label>
-							<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="number" placeholder="0.00" id="tx-amount">
-						</div>
-						<div>
-							<label class="block text-sm text-gray-400 mb-1">Type</label>
-							<select class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" id="tx-type">
-								<value=income>Income</value=income>
-								<option value="expense">Expense</option>
-							</select>
-						</div>
-					</div>
-					<div>
-						<label class="block text-sm text-gray-400 mb-1">Category</label>
-						<select class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" id="tx-category">
-							<div>Salary</div>
-							<option>Food & Dining</option>
-							<option>Shopping</option>
-							<option>Transportation</option>
-							<option>Entertainment</option>
-							<option>Bills & Utilities</option>
-							<option>Healthcare</option>
-							<option>Investment</option>
-						</select>
-					</div>
-					<div>
-						<label class="block text-sm text-gray-400 mb-1">Date</label>
-						<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="date" placeholder="" id="tx-date">
-					</div>
-					<div>
-						<label class="block text-sm text-gray-400 mb-1">Notes</label>
-						<textarea class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none resize-none" rows="2" placeholder="Optional\" notes id="tx-notes"></textarea>
-					</div>
-				</div>
-				<div class="flex justify-end gap-3 p-6 border-t border-gray-800" id="modal-addTransaction-actions"></div>
-			</div>
-		</div>
-		<div class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center" id="modal-addInvestment">
-			<div class="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-lg fade-in">
-				<div class="flex items-center justify-between p-6 border-b border-gray-800">
-					<h3 class="font-semibold text-lg">Add Investment</h3>
-					<button class="text-gray-400 hover:text-white text-2xl leading-none" onclick="closeModal('addInvestment')">&times;</button>
-				</div>
-				<div class="p-6 space-y-4">
-					<div class="grid grid-cols-2 gap-4">
-						<div>
-							<label class="block text-sm text-gray-400 mb-1">Ticker</label>
-							<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="text" placeholder="AAPL" id="inv-ticker">
-						</div>
-						<div>
-							<label class="block text-sm text-gray-400 mb-1">Shares</label>
-							<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="number" placeholder="0" id="inv-shares">
-						</div>
-					</div>
-					<div class="grid grid-cols-2 gap-4">
-						<div>
-							<label class="block text-sm text-gray-400 mb-1">Buy Price</label>
-							<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="number" placeholder="0.00" id="inv-price">
-						</div>
-						<div>
-							<label class="block text-sm text-gray-400 mb-1">Date</label>
-							<input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="date" placeholder="" id="inv-date">
-						</div>
-					</div>
-				</div>
-				<div class="flex justify-end gap-3 p-6 border-t border-gray-800" id="modal-addInvestment-actions"></div>
-			</div>
-		</div>
-		<div class="fixed inset-0 modal-backdrop z-50 hidden" id="modal-detail">
-			<div class="absolute right-0 top-0 h-full w-full max-w-md bg-gray-900 border-l border-gray-800 slide-in">
-				<div class="flex items-center justify-between p-6 border-b border-gray-800">
-					<h3 class="font-semibold text-lg">Transaction Detail</h3>
-					<button class="text-gray-400 hover:text-white text-2xl leading-none" onclick="closeModal('detail')">&times;</button>
-				</div>
-				<div class="p-6 space-y-6" id="detail-content"></div>
-			</div>
-		</div>
-		<div class="fixed top-16 right-8 w-80 bg-gray-900 rounded-2xl border border-gray-800 shadow-2xl z-50 hidden" id="notifications-panel">
-			<div class="p-4 border-b border-gray-800 flex items-center justify-between">
-				<h3 class="font-semibold">Notifications</h3>
-				<button class="text-xs text-primary hover:underline" onclick="clearNotifications()">Clear all</button>
-			</div>
-			<div class="max-h-96 overflow-y-auto" id="notifications-list"></div>
-		</div>
-		<div class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center" id="modal-confirmDelete">
-			<div class="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-sm fade-in">
-				<div class="p-6 text-center">
-					<div class="w-12 h-12 rounded-full bg-danger bg-opacity-20 flex items-center justify-center mx-auto mb-4">
-						<span class="text-danger text-2xl">!</span>
-					</div>
-					<h3 class="font-semibold text-lg mb-2">Confirm Delete</h3>
-					<p class="text-sm text-gray-400">Are you sure? This action cannot be undone.</p>
-				</div>
-				<div class="flex gap-3 p-6 pt-0">
-					<button class="flex-1 px-4 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700 transition" onclick="closeModal('confirmDelete')">Cancel</button>
-					<button class="flex-1 px-4 py-2 text-sm rounded-lg bg-danger hover:bg-opacity-80 font-medium transition" onclick="confirmDelete()">Delete</button>
-				</div>
-			</div>
-		</div>
-		<div class="fixed bottom-6 right-6 space-y-3 z-50" id="toast-container"></div>
-		<script>
-			state = {transactions: [], investments: [], notifications: [], deleteTarget: null, selectedTx: null};
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Finance Dashboard</title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <script>
+   tailwind.config = {theme: {extend: {colors: {primary: "#6366f1", accent: "#22d3ee", danger: "#ef4444", success: "#10b981", warn: "#f59e0b"}}}};
+  </script>
+  <style>
+   body {
+    font-family: Inter, system-ui, sans-serif;
+   }
+   .modal-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+   }
+   .fade-in {
+    animation: fadeIn 0.2s ease-out;
+   }
+   @keyframes fadeIn {
+    from {
+     opacity: 0;
+     transform: scale(0.95);
+    }
+    to {
+     opacity: 1;
+     transform: scale(1);
+    }
+   }
+   .slide-in {
+    animation: slideIn 0.3s ease-out;
+   }
+   @keyframes slideIn {
+    from {
+     transform: translateX(100%);
+    }
+    to {
+     transform: translateX(0);
+    }
+   }
+   ::-webkit-scrollbar {
+    width: 6px;
+   }
+   ::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+   }
+  </style>
+ </head>
+ <body class="bg-gray-950 text-white min-h-screen">
+  <!--Sidebar -->
+  <div class="fixed inset-y-0 left-0 w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-30" id="sidebar">
+   <div class="p-6 border-b border-gray-800">
+    <div class="flex items-center gap-3">
+     <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-lg font-bold">F</div>
+     <div>
+      <div class="font-bold text-lg">FinDash</div>
+      <div class="text-xs text-gray-400">Pro Edition</div>
+     </div>
+    </div>
+   </div>
+   <nav class="flex-1 p-4 space-y-1">
+    <a class="flex items-center gap-3 px-4 py-2 5 rounded-lg bg-primary bg-opacity-20 text-primary font-medium" href="#">
+     <span>&#9632;</span>
+     <span>Dashboard</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
+     <span>&#9650;</span>
+     <span>Analytics</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
+     <span>&#9660;</span>
+     <span>Transactions</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
+     <span>&#9670;</span>
+     <span>Investments</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
+     <span>&#9672;</span>
+     <span>Budget</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-2 5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition" href="#">
+     <span>&#9881;</span>
+     <span>Settings</span>
+    </a>
+   </nav>
+   <div class="p-4 border-t border-gray-800">
+    <div class="flex items-center gap-3 px-2">
+     <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-sm font-bold">JD</div>
+     <div class="flex-1 min-w-0">
+      <div class="text-sm font-medium truncate">John Doe</div>
+      <div class="text-xs text-gray-400">Premium Plan</div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <div class="ml-64 flex flex-col min-h-screen">
+   <!--Top bar -->
+   <header class="sticky top-0 bg-gray-950 bg-opacity-80 backdrop-blur-lg border-b border-gray-800 z-20">
+    <div class="flex items-center justify-between px-8 py-4">
+     <div>
+      <h1 class="text-2xl font-bold">Dashboard</h1>
+      <p class="text-sm text-gray-400">Welcome back, John. Here's your financial overview.</p>
+     </div>
+     <div class="flex items-center gap-4">
+      <div class="relative">
+       <input class="bg-gray-800 text-sm rounded-lg pl-10 pr-4 py-2 w-64 border border-gray-700 focus:border-primary focus:outline-none transition" placeholder="Search..." type="text">
+       <span class="absolute left-3 top-2 text-gray-400">&#128269;</span>
+      </div>
+      <button class="relative p-2 rounded-lg hover:bg-gray-800 transition" onclick="toggleNotifications()">
+       <span class="text-xl">&#128276;</span>
+       <span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+      </button>
+      <button class="px-4 py-2 bg-primary rounded-lg text-sm font-medium hover:bg-opacity-80 transition" onclick="openModal('addTransaction')">+ New Transaction</button>
+     </div>
+    </div>
+   </header>
+   <main class="flex-1 p-8">
+    <!--KPI Cards -->
+    <div class="grid grid-cols-4 gap-6 mb-8" id="kpi-cards">
+     <!--Charts row -->
+    </div>
+    <div class="grid grid-cols-3 gap-6 mb-8">
+     <div class="col-span-2">
+      <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+       <div class="flex items-center justify-between mb-6">
+        <div>
+         <h3 class="font-semibold text-lg">Revenue Overview</h3>
+         <p class="text-sm text-gray-400">Monthly revenue and expenses</p>
+        </div>
+        <div class="flex gap-2">
+         <button class="px-3 py-1 text-xs rounded-lg bg-primary bg-opacity-20 text-primary font-medium">1Y</button>
+         <button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">6M</button>
+         <button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">1M</button>
+        </div>
+       </div>
+       <canvas id="revenueChart" height="300"></canvas>
+      </div>
+     </div>
+     <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6">
+      <h3 class="font-semibold text-lg mb-2">Spending Categories</h3>
+      <p class="text-sm text-gray-400 mb-6">This month's breakdown</p>
+      <canvas id="donutChart" height="200"></canvas>
+      <div class="mt-4 space-y-2" id="donut-legend">
+       <!--Transactions and activity -->
+      </div>
+     </div>
+    </div>
+    <div class="grid grid-cols-3 gap-6 mb-8">
+     <div class="col-span-2">
+      <div class="bg-gray-900 rounded-2xl border border-gray-800">
+       <div class="flex items-center justify-between p-6 border-b border-gray-800">
+        <h3 class="font-semibold text-lg">Recent Transactions</h3>
+        <div class="flex gap-2">
+         <button class="px-3 py-1 5 text-xs rounded-lg bg-gray-800 text-white font-medium">All</button>
+         <button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">Income</button>
+         <button class="px-3 py-1 5 text-xs rounded-lg text-gray-400 hover:bg-gray-800 transition">Expense</button>
+        </div>
+       </div>
+      </div>
+      <div id="transactions-list"></div>
+     </div>
+     <div class="bg-gray-900 rounded-2xl border border-gray-800">
+      <div class="flex items-center justify-between p-6 border-b border-gray-800">
+       <h3 class="font-semibold text-lg">Activity Feed</h3>
+       <slot></slot>
+      </div>
+     </div>
+     <div class="p-4 space-y-4 max-h-96 overflow-y-auto" id="activity-feed">
+      <!--Investment portfolio -->
+     </div>
+    </div>
+    <div class="bg-gray-900 rounded-2xl border border-gray-800">
+     <div class="flex items-center justify-between p-6 border-b border-gray-800">
+      <h3 class="font-semibold text-lg">Investment Portfolio</h3>
+      <button class="px-4 py-2 text-sm bg-gray-800 rounded-lg hover:bg-gray-700 transition" onclick="openModal('addInvestment')">+ Add Position</button>
+     </div>
+    </div>
+    <div class="overflow-x-auto">
+     <table class="w-full">
+      <thead>
+       <tr class="text-left text-xs text-gray-400 uppercase">
+        <td class="px-6 py-4">Asset</td>
+        <td class="px-6 py-4">Shares</td>
+        <td class="px-6 py-4">Avg Cost</td>
+        <td class="px-6 py-4">Current</td>
+        <td class="px-6 py-4">P&L</td>
+        <td class="px-6 py-4">Allocation</td>
+        <td class="px-6 py-4">Actions</td>
+       </tr>
+      </thead>
+      <tbody id="portfolio-body">
+       <!--Budget section -->
+      </tbody>
+     </table>
+    </div>
+    <div class="bg-gray-900 rounded-2xl border border-gray-800">
+     <div class="flex items-center justify-between p-6 border-b border-gray-800">
+      <h3 class="font-semibold text-lg">Monthly Budget</h3>
+      <p class="text-sm text-gray-400">March 2026</p>
+     </div>
+    </div>
+    <div class="p-6 grid grid-cols-2 gap-6" id="budget-bars">
+     <!--Modals -->
+    </div>
+   </main>
+  </div>
+  <div class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center" id="modal-addTransaction">
+   <div class="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-lg fade-in">
+    <div class="flex items-center justify-between p-6 border-b border-gray-800">
+     <h3 class="font-semibold text-lg">New Transaction</h3>
+     <button class="text-gray-400 hover:text-white text-2xl leading-none" onclick="closeModal('addTransaction')">&times;</button>
+    </div>
+    <div class="p-6 space-y-4">
+     <div>
+      <label class="block text-sm text-gray-400 mb-1">Description</label>
+      <input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="text" placeholder="Enter description" id="tx-desc">
+     </div>
+     <div class="grid grid-cols-2 gap-4">
+      <div>
+       <label class="block text-sm text-gray-400 mb-1">Amount</label>
+       <input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="number" placeholder="0.00" id="tx-amount">
+      </div>
+      <div>
+       <label class="block text-sm text-gray-400 mb-1">Type</label>
+       <select class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" id="tx-type">
+        <value=income>Income</value=income>
+        <option value="expense">Expense</option>
+       </select>
+      </div>
+     </div>
+     <div>
+      <label class="block text-sm text-gray-400 mb-1">Category</label>
+      <select class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" id="tx-category">
+       <div>Salary</div>
+       <option>Food & Dining</option>
+       <option>Shopping</option>
+       <option>Transportation</option>
+       <option>Entertainment</option>
+       <option>Bills & Utilities</option>
+       <option>Healthcare</option>
+       <option>Investment</option>
+      </select>
+     </div>
+     <div>
+      <label class="block text-sm text-gray-400 mb-1">Date</label>
+      <input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="date" placeholder="" id="tx-date">
+     </div>
+     <div>
+      <label class="block text-sm text-gray-400 mb-1">Notes</label>
+      <textarea class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none resize-none" rows="2" placeholder="Optional\" notes id="tx-notes"></textarea>
+     </div>
+    </div>
+    <div class="flex justify-end gap-3 p-6 border-t border-gray-800" id="modal-addTransaction-actions"></div>
+   </div>
+  </div>
+  <div class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center" id="modal-addInvestment">
+   <div class="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-lg fade-in">
+    <div class="flex items-center justify-between p-6 border-b border-gray-800">
+     <h3 class="font-semibold text-lg">Add Investment</h3>
+     <button class="text-gray-400 hover:text-white text-2xl leading-none" onclick="closeModal('addInvestment')">&times;</button>
+    </div>
+    <div class="p-6 space-y-4">
+     <div class="grid grid-cols-2 gap-4">
+      <div>
+       <label class="block text-sm text-gray-400 mb-1">Ticker</label>
+       <input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="text" placeholder="AAPL" id="inv-ticker">
+      </div>
+      <div>
+       <label class="block text-sm text-gray-400 mb-1">Shares</label>
+       <input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="number" placeholder="0" id="inv-shares">
+      </div>
+     </div>
+     <div class="grid grid-cols-2 gap-4">
+      <div>
+       <label class="block text-sm text-gray-400 mb-1">Buy Price</label>
+       <input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="number" placeholder="0.00" id="inv-price">
+      </div>
+      <div>
+       <label class="block text-sm text-gray-400 mb-1">Date</label>
+       <input class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 5 text-sm focus:border-primary focus:outline-none" type="date" placeholder="" id="inv-date">
+      </div>
+     </div>
+    </div>
+    <div class="flex justify-end gap-3 p-6 border-t border-gray-800" id="modal-addInvestment-actions"></div>
+   </div>
+  </div>
+  <div class="fixed inset-0 modal-backdrop z-50 hidden" id="modal-detail">
+   <div class="absolute right-0 top-0 h-full w-full max-w-md bg-gray-900 border-l border-gray-800 slide-in">
+    <div class="flex items-center justify-between p-6 border-b border-gray-800">
+     <h3 class="font-semibold text-lg">Transaction Detail</h3>
+     <button class="text-gray-400 hover:text-white text-2xl leading-none" onclick="closeModal('detail')">&times;</button>
+    </div>
+    <div class="p-6 space-y-6" id="detail-content">
+     <!--Notifications panel -->
+    </div>
+   </div>
+  </div>
+  <div class="fixed top-16 right-8 w-80 bg-gray-900 rounded-2xl border border-gray-800 shadow-2xl z-50 hidden" id="notifications-panel">
+   <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+    <h3 class="font-semibold">Notifications</h3>
+    <button class="text-xs text-primary hover:underline" onclick="clearNotifications()">Clear all</button>
+   </div>
+   <div class="max-h-96 overflow-y-auto" id="notifications-list">
+    <!--Confirm delete modal -->
+   </div>
+  </div>
+  <div class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center" id="modal-confirmDelete">
+   <div class="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-sm fade-in">
+    <div class="p-6 text-center">
+     <div class="w-12 h-12 rounded-full bg-danger bg-opacity-20 flex items-center justify-center mx-auto mb-4">
+      <span class="text-danger text-2xl">!</span>
+     </div>
+     <h3 class="font-semibold text-lg mb-2">Confirm Delete</h3>
+     <p class="text-sm text-gray-400">Are you sure? This action cannot be undone.</p>
+    </div>
+    <div class="flex gap-3 p-6 pt-0">
+     <button class="flex-1 px-4 py-2 text-sm rounded-lg bg-gray-800 hover:bg-gray-700 transition" onclick="closeModal('confirmDelete')">Cancel</button>
+     <button class="flex-1 px-4 py-2 text-sm rounded-lg bg-danger hover:bg-opacity-80 font-medium transition" onclick="confirmDelete()">Delete</button>
+    </div>
+   </div>
+  </div>
+  <div class="fixed bottom-6 right-6 space-y-3 z-50" id="toast-container"></div>
+  <script>
+   //=== DATA ===
+   state = {transactions: [], investments: [], notifications: [], deleteTarget: null, selectedTx: null};
+   categories = {Salary: {color: "#6366f1", icon: "&#128176;"}, "Food & Dining": {color: "#f59e0b", icon: "&#127869;"}, Shopping: {color: "#ec4899", icon: "&#128722;"}, Transportation: {color: "#22d3ee", icon: "&#128663;"}, Entertainment: {color: "#a855f7", icon: "&#127916;"}, "Bills & Utilities": {color: "#ef4444", icon: "&#9889;"}, Healthcare: {color: "#10b981", icon: "&#128138;"}, Investment: {color: "#14b8a6", icon: "&#128200;"}};
+   //Seed data
+   function seedData() {
+    now = new Date();
+    txs = [{desc: "Salary Deposit", amount: 8500, type: "income", category: "Salary", date: "2026-03-01", notes: "Monthly salary"}, {desc: "Grocery Store", amount: 234.50, type: "expense", category: "Food & Dining", date: "2026-03-03"}, {desc: "Electric Bill", amount: 145.00, type: "expense", category: "Bills & Utilities", date: "2026-03-05"}, {desc: "Netflix", amount: 15.99, type: "expense", category: "Entertainment", date: "2026-03-05"}, {desc: "Gas Station", amount: 55.00, type: "expense", category: "Transportation", date: "2026-03-07"}, {desc: "Freelance Payment", amount: 2200, type: "income", category: "Salary", date: "2026-03-10"}, {desc: "Restaurant", amount: 78.50, type: "expense", category: "Food & Dining", date: "2026-03-12"}, {desc: "Pharmacy", amount: 42.00, type: "expense", category: "Healthcare", date: "2026-03-14"}, {desc: "New Shoes", amount: 129.99, type: "expense", category: "Shopping", date: "2026-03-15"}, {desc: "ETF Purchase", amount: 500, type: "expense", category: "Investment", date: "2026-03-18"}, {desc: "Uber Ride", amount: 23.50, type: "expense", category: "Transportation", date: "2026-03-19"}, {desc: "Concert Tickets", amount: 180, type: "expense", category: "Entertainment", date: "2026-03-20"}];
+    for (let tx of txs) {
+     tx.id = Math.random().toString(36).substr(2, 9);
+    }
+    state.transactions = txs;
 
-			categories = {Salary: {color: "#6366f1", icon: "&#128176;"}, "Food & Dining": {color: "#f59e0b", icon: "&#127869;"}, Shopping: {color: "#ec4899", icon: "&#128722;"}, Transportation: {color: "#22d3ee", icon: "&#128663;"}, Entertainment: {color: "#a855f7", icon: "&#127916;"}, "Bills & Utilities": {color: "#ef4444", icon: "&#9889;"}, Healthcare: {color: "#10b981", icon: "&#128138;"}, Investment: {color: "#14b8a6", icon: "&#128200;"}};
+    state.investments = [{ticker: "AAPL", name: "Apple Inc.", shares: 25, avgCost: 178.50, current: 195.20, change: 1.8}, {ticker: "MSFT", name: "Microsoft", shares: 15, avgCost: 380.00, current: 415.75, change: -0.5}, {ticker: "GOOGL", name: "Alphabet", shares: 10, avgCost: 140.25, current: 158.90, change: 2.3}, {ticker: "AMZN", name: "Amazon", shares: 20, avgCost: 175.00, current: 188.40, change: 0.9}, {ticker: "VOO", name: "Vanguard S&P 500", shares: 30, avgCost: 420.00, current: 445.60, change: 0.4}];
+    state.notifications = [{text: "Salary deposited: $8,500.00", time: "2h ago", unread: true}, {text: "Budget alert: Food & Dining at 85%", time: "5h ago", unread: true}, {text: "Investment +2.3% GOOGL", time: "1d ago", unread: false}, {text: "Bill reminder: Rent due in 3 days", time: "1d ago", unread: false}];
+   }
+   //=== UTILITY ===
+   function fmt(n) {
+    return n.toLocaleString("en-US", {style: "currency", currency: "USD"});
+   }
 
-			function seedData() {
-				now = new Date();
-				txs = [{desc: "Salary Deposit", amount: 8500, type: "income", category: "Salary", date: "2026-03-01", notes: "Monthly salary"}, {desc: "Grocery Store", amount: 234.50, type: "expense", category: "Food & Dining", date: "2026-03-03"}, {desc: "Electric Bill", amount: 145.00, type: "expense", category: "Bills & Utilities", date: "2026-03-05"}, {desc: "Netflix", amount: 15.99, type: "expense", category: "Entertainment", date: "2026-03-05"}, {desc: "Gas Station", amount: 55.00, type: "expense", category: "Transportation", date: "2026-03-07"}, {desc: "Freelance Payment", amount: 2200, type: "income", category: "Salary", date: "2026-03-10"}, {desc: "Restaurant", amount: 78.50, type: "expense", category: "Food & Dining", date: "2026-03-12"}, {desc: "Pharmacy", amount: 42.00, type: "expense", category: "Healthcare", date: "2026-03-14"}, {desc: "New Shoes", amount: 129.99, type: "expense", category: "Shopping", date: "2026-03-15"}, {desc: "ETF Purchase", amount: 500, type: "expense", category: "Investment", date: "2026-03-18"}, {desc: "Uber Ride", amount: 23.50, type: "expense", category: "Transportation", date: "2026-03-19"}, {desc: "Concert Tickets", amount: 180, type: "expense", category: "Entertainment", date: "2026-03-20"}];
-				for (let tx of txs) {
-					tx.id = Math.random().toString(36).substr(2, 9);
-				}
-				state.transactions = txs;
+   function pct(n) {
+    return (n >= 0 ? "+" : "") + n.toFixed(1) + "%";
+   }
 
-				state.investments = [{ticker: "AAPL", name: "Apple Inc.", shares: 25, avgCost: 178.50, current: 195.20, change: 1.8}, {ticker: "MSFT", name: "Microsoft", shares: 15, avgCost: 380.00, current: 415.75, change: -0.5}, {ticker: "GOOGL", name: "Alphabet", shares: 10, avgCost: 140.25, current: 158.90, change: 2.3}, {ticker: "AMZN", name: "Amazon", shares: 20, avgCost: 175.00, current: 188.40, change: 0.9}, {ticker: "VOO", name: "Vanguard S&P 500", shares: 30, avgCost: 420.00, current: 445.60, change: 0.4}];
+   function toast(msg, type) {
+    container = document.getElementById("toast-container");
+    colors = {success: "bg-success", error: "bg-danger", info: "bg-primary"};
+    div = document.createElement("div");
+    div.className = `${colors[type] || "bg-gray-700"} text-white px-4 py-3 rounded-lg shadow-lg text-sm fade-in flex items-center gap-2`;
+    div.innerHTML = msg;
+    container.appendChild(div);
+    setTimeout(() => container.removeChild(div), 3000);
+   }
 
-				state.notifications = [{text: "Salary deposited: $8,500.00", time: "2h ago", unread: true}, {text: "Budget alert: Food & Dining at 85%", time: "5h ago", unread: true}, {text: "Investment +2.3% GOOGL", time: "1d ago", unread: false}, {text: "Bill reminder: Rent due in 3 days", time: "1d ago", unread: false}];
-			}
+   //=== MODALS ===
+   function openModal(name) {
+    el = document.getElementById("modal-" + name);
+    el.classList.remove("hidden");
+    el.classList.add("flex");
+   }
 
-			function fmt(n) {
-				return n.toLocaleString("en-US", {style: "currency", currency: "USD"});
-			}
+   function closeModal(name) {
+    el = document.getElementById("modal-" + name);
+    el.classList.add("hidden");
+    el.classList.remove("flex");
+   }
 
-			function pct(n) {
-				return (n >= 0 ? "+" : "") + n.toFixed(1) + "%";
-			}
+   function toggleNotifications() {
+    panel = document.getElementById("notifications-panel");
+    panel.classList.toggle("hidden");
+   }
 
-			function toast(msg, type) {
-				container = document.getElementById("toast-container");
-				colors = {success: "bg-success", error: "bg-danger", info: "bg-primary"};
-				div = document.createElement("div");
-				div.className = `${colors[type] || "bg-gray-700"} text-white px-4 py-3 rounded-lg shadow-lg text-sm fade-in flex items-center gap-2`;
-				div.innerHTML = msg;
-				container.appendChild(div);
-				setTimeout(() => container.removeChild(div), 3000);
-			}
+   function clearNotifications() {
+    state.notifications = [];
+    renderNotifications();
+    toast("Notifications cleared", "info");
+   }
 
-			function openModal(name) {
-				el = document.getElementById("modal-" + name);
-				el.classList.remove("hidden");
-				el.classList.add("flex");
-			}
+   //=== SUBMIT HANDLERS ===
+   function submitTransaction() {
+    desc = document.getElementById("tx-desc").value;
+    amount = parseFloat(document.getElementById("tx-amount").value);
+    type = document.getElementById("tx-type").value;
+    category = document.getElementById("tx-category").value;
+    date = document.getElementById("tx-date").value;
+    notes = document.getElementById("tx-notes").value;
 
-			function closeModal(name) {
-				el = document.getElementById("modal-" + name);
-				el.classList.add("hidden");
-				el.classList.remove("flex");
-			}
+    if (!desc || isNaN(amount) || !date) {
+     toast("Please fill required fields", "error");
+     return;
+    }
 
-			function toggleNotifications() {
-				panel = document.getElementById("notifications-panel");
-				panel.classList.toggle("hidden");
-			}
+    tx = {id: Math.random().toString(36).substr(2, 9), desc: desc, amount: amount, type: type, category: category, date: date, notes: notes};
+    state.transactions.unshift(tx);
+    closeModal("addTransaction");
+    document.getElementById("tx-desc").value = "";
+    document.getElementById("tx-amount").value = "";
+    document.getElementById("tx-notes").value = "";
+    renderAll();
+    toast("Transaction added successfully", "success");
+   }
 
-			function clearNotifications() {
-				state.notifications = [];
-				renderNotifications();
-				toast("Notifications cleared", "info");
-			}
+   function submitInvestment() {
+    ticker = document.getElementById("inv-ticker").value.toUpperCase();
+    shares = parseInt(document.getElementById("inv-shares").value);
+    price = parseFloat(document.getElementById("inv-price").value);
 
-			function submitTransaction() {
-				desc = document.getElementById("tx-desc").value;
-				amount = parseFloat(document.getElementById("tx-amount").value);
-				type = document.getElementById("tx-type").value;
-				category = document.getElementById("tx-category").value;
-				date = document.getElementById("tx-date").value;
-				notes = document.getElementById("tx-notes").value;
+    if (!ticker || isNaN(shares) || isNaN(price)) {
+     toast("Please fill all fields", "error");
+     return;
+    }
 
-				if (!desc || isNaN(amount) || !date) {
-					toast("Please fill required fields", "error");
-					return;
-				}
+    state.investments.push({ticker: ticker, name: ticker, shares: shares, avgCost: price, current: price * (1 + (Math.random() - 0.5) * 0.1), change: (Math.random() - 0.5) * 5});
+    closeModal("addInvestment");
+    renderAll();
+    toast(`Added ${ticker} to portfolio`, "success");
+   }
 
-				tx = {id: Math.random().toString(36).substr(2, 9), desc: desc, amount: amount, type: type, category: category, date: date, notes: notes};
-				state.transactions.unshift(tx);
-				closeModal("addTransaction");
-				document.getElementById("tx-desc").value = "";
-				document.getElementById("tx-amount").value = "";
-				document.getElementById("tx-notes").value = "";
-				renderAll();
-				toast("Transaction added successfully", "success");
-			}
+   //=== DELETE ===
+   function requestDelete(id) {
+    state.deleteTarget = id;
+    openModal("confirmDelete");
+   }
 
-			function submitInvestment() {
-				ticker = document.getElementById("inv-ticker").value.toUpperCase();
-				shares = parseInt(document.getElementById("inv-shares").value);
-				price = parseFloat(document.getElementById("inv-price").value);
+   function confirmDelete() {
+    if (state.deleteTarget) {
+     state.transactions = state.transactions.filter((t) => t.id !== state.deleteTarget);
+     state.deleteTarget = null;
+     closeModal("confirmDelete");
+     renderAll();
+     toast("Transaction deleted", "info");
+    }
+   }
 
-				if (!ticker || isNaN(shares) || isNaN(price)) {
-					toast("Please fill all fields", "error");
-					return;
-				}
+   //=== DETAIL VIEW ===
+   function showDetail(id) {
+    tx = state.transactions.find((t) => t.id === id);
+    if (!tx) {
+     return;
+    }
+    cat = categories[tx.category] || {color: "#6b7280", icon: "&#9679;"};
+    content = document.getElementById("detail-content");
+    content.innerHTML = `<div class="flex items-center gap-4 mb-6"> <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl">${cat.icon}</div> <div>  <div class="font-semibold text-lg">${tx.desc}</div>  <div class="text-sm text-gray-400">${tx.category}</div> </div></div><div class="grid grid-cols-2 gap-4"> <div class="bg-gray-800 rounded-xl p-4">  <div class="text-xs text-gray-400 mb-1">Amount</div>  <div class="font-semibold">${fmt(tx.amount)}</div> </div> <div class="bg-gray-800 rounded-xl p-4">  <div class="text-xs text-gray-400 mb-1">Date</div>  <div class="font-semibold">${tx.date}</div> </div> <div class="bg-gray-800 rounded-xl p-4">  <div class="text-xs text-gray-400 mb-1">Type</div>  <div class="font-semibold capitalize">${tx.type}</div> </div> <div class="bg-gray-800 rounded-xl p-4">  <div class="text-xs text-gray-400 mb-1">Category</div>  <div class="font-semibold">${tx.category}</div> </div></div>`;
+    openModal("detail");
+   }
 
-				state.investments.push({ticker: ticker, name: ticker, shares: shares, avgCost: price, current: price * (1 + (Math.random() - 0.5) * 0.1), change: (Math.random() - 0.5) * 5});
-				closeModal("addInvestment");
-				renderAll();
-				toast(`Added ${ticker} to portfolio`, "success");
-			}
+   //=== RENDER FUNCTIONS ===
+   function renderKPIs() {
+    income = state.transactions.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    expenses = state.transactions.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+    balance = income - expenses;
+    investmentValue = state.investments.reduce((s, i) => s + i.current * i.shares, 0);
 
-			function requestDelete(id) {
-				state.deleteTarget = id;
-				openModal("confirmDelete");
-			}
+    cards = [{label: "Total Balance", value: fmt(balance), change: "+12.5%", color: "primary", icon: "&#128179;"}, {label: "Income", value: fmt(income), change: "+8.2%", color: "success", icon: "&#128200;"}, {label: "Expenses", value: fmt(expenses), change: "-3.1%", color: "danger", icon: "&#128201;"}, {label: "Investments", value: fmt(investmentValue), change: "+5.7%", color: "accent", icon: "&#128176;"}];
+    container = document.getElementById("kpi-cards");
+    container.innerHTML = "";
+    for (let card of cards) {
+     isPositive = card.change.startsWith("+");
+     container.innerHTML += `<div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 hover:border-gray-700 transition cursor-pointer"> <div class="flex items-center justify-between mb-4">  <div class="text-2xl">${card.icon}</div>  <span class="text-xs font-medium px-2 py-1 rounded-full">${card.change}</span> </div> <div class="text-2xl font-bold mb-1">${card.value}</div> <div class="text-sm text-gray-400">${card.label}</div></div>`;
+    }
+   }
+   function renderTransactions() {
+    container = document.getElementById("transactions-list");
+    container.innerHTML = "";
+    sorted = [...state.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+    for (let tx of sorted.slice(0, 10)) {
+     cat = categories[tx.category] || {color: "#6b7280", icon: "&#9679;"};
+     isIncome = tx.type === "income";
+     container.innerHTML += `<div class="flex items-center gap-4 px-6 py-4 hover:bg-gray-800/50 transition cursor-pointer border-b border-gray-800/50"> <div class="w-10 h-10 rounded-xl flex items-center justify-center">${cat.icon}</div> <div class="flex-1 min-w-0">  <div class="font-medium text-sm">${tx.desc}</div>  <div class="text-xs text-gray-400">${tx.category} &middot; ${tx.date}</div> </div> <div class="text-right">  <div class="font-semibold text-sm">${fmt(tx.amount)}</div> </div></div>`;
+    }
+   }
+   function renderPortfolio() {
+    container = document.getElementById("portfolio-body");
+    container.innerHTML = "";
+    totalValue = state.investments.reduce((s, i) => s + i.current * i.shares, 0);
+    for (let inv of state.investments) {
+     pl = (inv.current - inv.avgCost) * inv.shares;
+     plPct = ((inv.current - inv.avgCost) / inv.avgCost) * 100;
+     alloc = (inv.current * inv.shares / totalValue * 100).toFixed(1);
+     isUp = pl >= 0;
+     container.innerHTML += `<tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition"> <td class="px-6 py-4">  <div class="font-medium">${inv.ticker}</div>  <div class="text-xs text-gray-400">${inv.name}</div> </td> <td class="px-6 py-4">${inv.shares}</td> <td class="px-6 py-4">${fmt(inv.avgCost)}</td> <td class="px-6 py-4">  <div>${fmt(inv.current)}</div>  <div class="text-xs">${pct(inv.change)} today</div> </td> <td class="px-6 py-4">${fmt(pl)}</td> <td class="px-6 py-4">  <div class="flex items-center gap-2">   <div class="flex-1 bg-gray-700 rounded-full h-1">    <div class="bg-primary rounded-full h-1"></div>   </div>   <span class="text-xs text-gray-400">${alloc}%</span>  </div> </td> <td class="px-6 py-4">  <button class="text-xs text-primary hover:underline">Trade</button> </td></tr>`;
+    }
+   }
+   function renderBudget() {
+    container = document.getElementById("budget-bars");
+    container.innerHTML = "";
+    budgets = [{name: "Food & Dining", limit: 400}, {name: "Transportation", limit: 200}, {name: "Entertainment", limit: 250}, {name: "Shopping", limit: 300}, {name: "Bills & Utilities", limit: 500}, {name: "Healthcare", limit: 150}];
+    for (let b of budgets) {
+     spent = state.transactions.filter((t) => t.category === b.name && t.type === "expense").reduce((s, t) => s + t.amount, 0);
+     pctUsed = Math.min((spent / b.limit * 100), 100).toFixed(0);
+     color = pctUsed > 90 ? "#ef4444": pctUsed > 70 ? "#f59e0b" : "#10b981";
+     container.innerHTML += `<div> <div class="flex justify-between text-sm mb-2">  <span>${b.name}</span>  <span class="text-gray-400">${fmt(spent)} / ${fmt(b.limit)}</span> </div> <div class="w-full bg-gray-800 rounded-full h-2">  <div class="h-2 rounded-full transition-all"></div> </div></div>`;
+    }
+   }
+   function renderActivity() {
+    container = document.getElementById("activity-feed");
+    container.innerHTML = "";
+    activities = [...state.transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+    for (let tx of activities) {
+     cat = categories[tx.category] || {color: "#6b7280", icon: "&#9679;"};
+     container.innerHTML += `<div class="flex gap-3"> <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm">${cat.icon}</div> <div class="flex-1">  <div class="text-sm">${tx.desc}</div>  <div class="text-xs text-gray-400">${tx.date}</div> </div> <div class="text-xs font-medium">${fmt(tx.amount)}</div></div>`;
+    }
+   }
+   function renderNotifications() {
+    container = document.getElementById("notifications-list");
+    container.innerHTML = "";
+    if (state.notifications.length === 0) {
+     container.innerHTML = '<div class="p-6 text-center text-sm text-gray-400">No notifications</div>';
+     return;
+    }
+    for (let n of state.notifications) {
+     container.innerHTML += `<div class="px-4 py-3 border-b border-gray-800/50 hover:bg-gray-800/30 transition"> <div class="text-sm">${n.text}</div> <div class="text-xs text-gray-400 mt-1">${n.time}</div></div>`;
+    }
+   }
+   //=== CHARTS ===
+   function drawRevenueChart() {
+    canvas = document.getElementById("revenueChart");
+    ctx = canvas.getContext("2d");
+    w = canvas.width = canvas.parentElement.clientWidth - 48;
+    h = canvas.height = 300;
 
-			function confirmDelete() {
-				if (state.deleteTarget) {
-					state.transactions = state.transactions.filter((t) => t.id !== state.deleteTarget);
-					state.deleteTarget = null;
-					closeModal("confirmDelete");
-					renderAll();
-					toast("Transaction deleted", "info");
-				}
-			}
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    revenue = [4200, 5100, 4800, 6200, 5800, 7100, 6500, 7800, 8200, 7600, 8500, 10700];
+    expenses = [3100, 3800, 3500, 4100, 4300, 4800, 4200, 5100, 5400, 4900, 5200, 6800];
+    maxVal = Math.max(...revenue) * 1.1;
+    barW = (w - 80) / months.length;
+    padL = 60;
+    padB = 40;
 
-			function showDetail(id) {
-				tx = state.transactions.find((t) => t.id === id);
-				if (!tx) {
-					return;
-				}
-				cat = categories[tx.category] || {color: "#6b7280", icon: "&#9679;"};
-				content = document.getElementById("detail-content");
-				content.innerHTML = `<div class="flex items-center gap-4 mb-6"><div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl">${cat.icon}</div><div><div class="font-semibold text-lg">${tx.desc}</div><div class="text-sm text-gray-400">${tx.category}</div></div></div><div class="grid grid-cols-2 gap-4"><div class="bg-gray-800 rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">Amount</div><div class="font-semibold">${fmt(tx.amount)}</div></div><div class="bg-gray-800 rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">Date</div><div class="font-semibold">${tx.date}</div></div><div class="bg-gray-800 rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">Type</div><div class="font-semibold capitalize">${tx.type}</div></div><div class="bg-gray-800 rounded-xl p-4"><div class="text-xs text-gray-400 mb-1">Category</div><div class="font-semibold">${tx.category}</div></div></div>`;
-				openModal("detail");
-			}
+    ctx.clearRect(0, 0, w, h);
 
-			function renderKPIs() {
-				income = state.transactions.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
-				expenses = state.transactions.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-				balance = income - expenses;
-				investmentValue = state.investments.reduce((s, i) => s + i.current * i.shares, 0);
+    //Grid lines
+    for (let i of [0, 1, 2, 3, 4]) {
+     y = (h - padB) - (i / 4) * (h - padB - 20);
+     ctx.strokeStyle = "#1f2937";
+     ctx.lineWidth = 1;
+     ctx.beginPath();
+     ctx.moveTo(padL, y);
+     ctx.lineTo(w, y);
+     ctx.stroke();
+     ctx.fillStyle = "#6b7280";
+     ctx.font = "11px monospace";
+     ctx.textAlign = "right";
+     ctx.fillText("$" + Math.round(maxVal * i / 4 / 1000) + "k", padL - 8, y + 4);
+    }
 
-				cards = [{label: "Total Balance", value: fmt(balance), change: "+12.5%", color: "primary", icon: "&#128179;"}, {label: "Income", value: fmt(income), change: "+8.2%", color: "success", icon: "&#128200;"}, {label: "Expenses", value: fmt(expenses), change: "-3.1%", color: "danger", icon: "&#128201;"}, {label: "Investments", value: fmt(investmentValue), change: "+5.7%", color: "accent", icon: "&#128176;"}];
+    for (let i of Array.from({length: months.length}, (_, i) => i)) {
+     x = padL + i * barW + barW * 0.15;
+     bw = barW * 0.3;
 
-				container = document.getElementById("kpi-cards");
-				container.innerHTML = "";
-				for (let card of cards) {
-					isPositive = card.change.startsWith("+");
-					container.innerHTML += `<div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 hover:border-gray-700 transition cursor-pointer"><div class="flex items-center justify-between mb-4"><div class="text-2xl">${card.icon}</div><span class="text-xs font-medium px-2 py-1 rounded-full">${card.change}</span></div><div class="text-2xl font-bold mb-1">${card.value}</div><div class="text-sm text-gray-400">${card.label}</div></div>`;
-				}
-			}
-			function renderTransactions() {
-				container = document.getElementById("transactions-list");
-				container.innerHTML = "";
-				sorted = [...state.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-				for (let tx of sorted.slice(0, 10)) {
-					cat = categories[tx.category] || {color: "#6b7280", icon: "&#9679;"};
-					isIncome = tx.type === "income";
-					container.innerHTML += `<div class="flex items-center gap-4 px-6 py-4 hover:bg-gray-800/50 transition cursor-pointer border-b border-gray-800/50"><div class="w-10 h-10 rounded-xl flex items-center justify-center">${cat.icon}</div><div class="flex-1 min-w-0"><div class="font-medium text-sm">${tx.desc}</div><div class="text-xs text-gray-400">${tx.category} &middot; ${tx.date}</div></div><div class="text-right"><div class="font-semibold text-sm">${fmt(tx.amount)}</div></div></div>`;
-				}
-			}
-			function renderPortfolio() {
-				container = document.getElementById("portfolio-body");
-				container.innerHTML = "";
-				totalValue = state.investments.reduce((s, i) => s + i.current * i.shares, 0);
-				for (let inv of state.investments) {
-					pl = (inv.current - inv.avgCost) * inv.shares;
-					plPct = ((inv.current - inv.avgCost) / inv.avgCost) * 100;
-					alloc = (inv.current * inv.shares / totalValue * 100).toFixed(1);
-					isUp = pl >= 0;
-					container.innerHTML += `<tr class="border-b border-gray-800/50 hover:bg-gray-800/30 transition"><td class="px-6 py-4"><div class="font-medium">${inv.ticker}</div><div class="text-xs text-gray-400">${inv.name}</div></td><td class="px-6 py-4">${inv.shares}</td><td class="px-6 py-4">${fmt(inv.avgCost)}</td><td class="px-6 py-4"><div>${fmt(inv.current)}</div><div class="text-xs">${pct(inv.change)} today</div></td><td class="px-6 py-4">${fmt(pl)}</td><td class="px-6 py-4"><div class="flex items-center gap-2"><div class="flex-1 bg-gray-700 rounded-full h-1"><div class="bg-primary rounded-full h-1"></div></div><span class="text-xs text-gray-400">${alloc}%</span></div></td><td class="px-6 py-4"><button class="text-xs text-primary hover:underline">Trade</button></td></tr>`;
-				}
-			}
-			function renderBudget() {
-				container = document.getElementById("budget-bars");
-				container.innerHTML = "";
-				budgets = [{name: "Food & Dining", limit: 400}, {name: "Transportation", limit: 200}, {name: "Entertainment", limit: 250}, {name: "Shopping", limit: 300}, {name: "Bills & Utilities", limit: 500}, {name: "Healthcare", limit: 150}];
-				for (let b of budgets) {
-					spent = state.transactions.filter((t) => t.category === b.name && t.type === "expense").reduce((s, t) => s + t.amount, 0);
-					pctUsed = Math.min((spent / b.limit * 100), 100).toFixed(0);
-					color = pctUsed > 90 ? "#ef4444": pctUsed > 70 ? "#f59e0b" : "#10b981";
-					container.innerHTML += `<div><div class="flex justify-between text-sm mb-2"><span>${b.name}</span><span class="text-gray-400">${fmt(spent)} / ${fmt(b.limit)}</span></div><div class="w-full bg-gray-800 rounded-full h-2"><div class="h-2 rounded-full transition-all"></div></div></div>`;
-				}
-			}
-			function renderActivity() {
-				container = document.getElementById("activity-feed");
-				container.innerHTML = "";
-				activities = [...state.transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
-				for (let tx of activities) {
-					cat = categories[tx.category] || {color: "#6b7280", icon: "&#9679;"};
-					container.innerHTML += `<div class="flex gap-3"><div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm">${cat.icon}</div><div class="flex-1"><div class="text-sm">${tx.desc}</div><div class="text-xs text-gray-400">${tx.date}</div></div><div class="text-xs font-medium">${fmt(tx.amount)}</div></div>`;
-				}
-			}
-			function renderNotifications() {
-				container = document.getElementById("notifications-list");
-				container.innerHTML = "";
-				if (state.notifications.length === 0) {
-					container.innerHTML = '<div class="p-6 text-center text-sm text-gray-400">No notifications</div>';
-					return;
-				}
-				for (let n of state.notifications) {
-					container.innerHTML += `<div class="px-4 py-3 border-b border-gray-800/50 hover:bg-gray-800/30 transition"><div class="text-sm">${n.text}</div><div class="text-xs text-gray-400 mt-1">${n.time}</div></div>`;
-				}
-			}
-			function drawRevenueChart() {
-				canvas = document.getElementById("revenueChart");
-				ctx = canvas.getContext("2d");
-				w = canvas.width = canvas.parentElement.clientWidth - 48;
-				h = canvas.height = 300;
+     //Revenue bar
+     rh = (revenue[i] / maxVal) * (h - padB - 20);
+     ctx.fillStyle = "#6366f1";
+     ctx.beginPath();
+     ctx.roundRect(x, h - padB - rh, bw, rh, [4, 4, 0, 0]);
+     ctx.fill();
 
-				months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-				revenue = [4200, 5100, 4800, 6200, 5800, 7100, 6500, 7800, 8200, 7600, 8500, 10700];
-				expenses = [3100, 3800, 3500, 4100, 4300, 4800, 4200, 5100, 5400, 4900, 5200, 6800];
-				maxVal = Math.max(...revenue) * 1.1;
-				barW = (w - 80) / months.length;
-				padL = 60;
-				padB = 40;
+     //Expense bar
+     eh = (expenses[i] / maxVal) * (h - padB - 20);
+     ctx.fillStyle = "#22d3ee";
+     ctx.beginPath();
+     ctx.roundRect(x + bw + 2, h - padB - eh, bw, eh, [4, 4, 0, 0]);
+     ctx.fill();
 
-				ctx.clearRect(0, 0, w, h);
+     //Month label
+     ctx.fillStyle = "#6b7280";
+     ctx.font = "11px monospace";
+     ctx.textAlign = "center";
+     ctx.fillText(months[i], padL + i * barW + barW / 2, h - 12);
+    }
 
-				for (let i of [0, 1, 2, 3, 4]) {
-					y = (h - padB) - (i / 4) * (h - padB - 20);
-					ctx.strokeStyle = "#1f2937";
-					ctx.lineWidth = 1;
-					ctx.beginPath();
-					ctx.moveTo(padL, y);
-					ctx.lineTo(w, y);
-					ctx.stroke();
-					ctx.fillStyle = "#6b7280";
-					ctx.font = "11px monospace";
-					ctx.textAlign = "right";
-					ctx.fillText("$" + Math.round(maxVal * i / 4 / 1000) + "k", padL - 8, y + 4);
-				}
+    //Legend
+    ctx.fillStyle = "#6366f1";
+    ctx.fillRect(w - 180, 8, 12, 12);
+    ctx.fillStyle = "#9ca3af";
+    ctx.font = "12px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Revenue", w - 162, 18);
+    ctx.fillStyle = "#22d3ee";
+    ctx.fillRect(w - 90, 8, 12, 12);
+    ctx.fillStyle = "#9ca3af";
+    ctx.fillText("Expenses", w - 72, 18);
+   }
 
-				for (let i of Array.from({length: months.length}, (_, i) => i)) {
-					x = padL + i * barW + barW * 0.15;
-					bw = barW * 0.3;
+   function drawDonutChart() {
+    canvas = document.getElementById("donutChart");
+    ctx = canvas.getContext("2d");
+    w = canvas.width = canvas.parentElement.clientWidth - 48;
+    h = canvas.height = 200;
+    cx = w / 2;
+    cy = h / 2;
+    outerR = Math.min(cx, cy) - 10;
+    innerR = outerR * 0.6;
 
-					rh = (revenue[i] / maxVal) * (h - padB - 20);
-					ctx.fillStyle = "#6366f1";
-					ctx.beginPath();
-					ctx.roundRect(x, h - padB - rh, bw, rh, [4, 4, 0, 0]);
-					ctx.fill();
+    //Aggregate spending by category
+    spending = {};
+    for (let tx of state.transactions) {
+     if (tx.type === "expense") {
+      if (!spending[tx.category]) {
+       spending[tx.category] = 0;
+      }
+      spending[tx.category] += tx.amount;
+     }
+    }
 
-					eh = (expenses[i] / maxVal) * (h - padB - 20);
-					ctx.fillStyle = "#22d3ee";
-					ctx.beginPath();
-					ctx.roundRect(x + bw + 2, h - padB - eh, bw, eh, [4, 4, 0, 0]);
-					ctx.fill();
+    entries = Object.entries(spending).sort((a, b) => b[1] - a[1]);
+    total = entries.reduce((s, e) => s + e[1], 0);
 
-					ctx.fillStyle = "#6b7280";
-					ctx.font = "11px monospace";
-					ctx.textAlign = "center";
-					ctx.fillText(months[i], padL + i * barW + barW / 2, h - 12);
-				}
+    ctx.clearRect(0, 0, w, h);
 
-				ctx.fillStyle = "#6366f1";
-				ctx.fillRect(w - 180, 8, 12, 12);
-				ctx.fillStyle = "#9ca3af";
-				ctx.font = "12px sans-serif";
-				ctx.textAlign = "left";
-				ctx.fillText("Revenue", w - 162, 18);
-				ctx.fillStyle = "#22d3ee";
-				ctx.fillRect(w - 90, 8, 12, 12);
-				ctx.fillStyle = "#9ca3af";
-				ctx.fillText("Expenses", w - 72, 18);
-			}
+    startAngle = -Math.PI / 2;
+    for (let entry of entries) {
+     cat = categories[entry[0]] || {color: "#6b7280"};
+     sliceAngle = (entry[1] / total) * Math.PI * 2;
+     ctx.beginPath();
+     ctx.arc(cx, cy, outerR, startAngle, startAngle + sliceAngle);
+     ctx.arc(cx, cy, innerR, startAngle + sliceAngle, startAngle, true);
+     ctx.closePath();
+     ctx.fillStyle = cat.color;
+     ctx.fill();
+     startAngle += sliceAngle;
+    }
 
-			function drawDonutChart() {
-				canvas = document.getElementById("donutChart");
-				ctx = canvas.getContext("2d");
-				w = canvas.width = canvas.parentElement.clientWidth - 48;
-				h = canvas.height = 200;
-				cx = w / 2;
-				cy = h / 2;
-				outerR = Math.min(cx, cy) - 10;
-				innerR = outerR * 0.6;
+    //Center text
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 18px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(fmt(total), cx, cy + 2);
+    ctx.fillStyle = "#9ca3af";
+    ctx.font = "11px sans-serif";
+    ctx.fillText("Total Spent", cx, cy + 18);
 
-				spending = {};
-				for (let tx of state.transactions) {
-					if (tx.type === "expense") {
-						if (!spending[tx.category]) {
-							spending[tx.category] = 0;
-						}
-						spending[tx.category] += tx.amount;
-					}
-				}
+    //Legend
+    legend = document.getElementById("donut-legend");
+    legend.innerHTML = "";
+    for (let entry of entries) {
+     cat = categories[entry[0]] || {color: "#6b7280"};
+     p = (entry[1] / total * 100).toFixed(0);
+     legend.innerHTML += `<div class="flex items-center justify-between text-sm"> <div class="flex items-center gap-2">  <div class="w-3 h-3 rounded-full"></div>  <span class="text-gray-300">${entry[0]}</span> </div> <span class="text-gray-400">${p}%</span></div>`;
+    }
+   }
+   //=== RENDER ALL ===
+   function renderAll() {
+    renderKPIs();
+    renderTransactions();
+    renderPortfolio();
+    renderBudget();
+    renderActivity();
+    renderNotifications();
+    drawRevenueChart();
+    drawDonutChart();
+   }
 
-				entries = Object.entries(spending).sort((a, b) => b[1] - a[1]);
-				total = entries.reduce((s, e) => s + e[1], 0);
+   //=== INIT ===
+   seedData();
+   renderAll();
 
-				ctx.clearRect(0, 0, w, h);
+   window.addEventListener("resize", () => {
+    drawRevenueChart();
+    drawDonutChart();
+   }
+   );
 
-				startAngle = -Math.PI / 2;
-				for (let entry of entries) {
-					cat = categories[entry[0]] || {color: "#6b7280"};
-					sliceAngle = (entry[1] / total) * Math.PI * 2;
-					ctx.beginPath();
-					ctx.arc(cx, cy, outerR, startAngle, startAngle + sliceAngle);
-					ctx.arc(cx, cy, innerR, startAngle + sliceAngle, startAngle, true);
-					ctx.closePath();
-					ctx.fillStyle = cat.color;
-					ctx.fill();
-					startAngle += sliceAngle;
-				}
-
-				ctx.fillStyle = "#fff";
-				ctx.font = "bold 18px sans-serif";
-				ctx.textAlign = "center";
-				ctx.fillText(fmt(total), cx, cy + 2);
-				ctx.fillStyle = "#9ca3af";
-				ctx.font = "11px sans-serif";
-				ctx.fillText("Total Spent", cx, cy + 18);
-
-				legend = document.getElementById("donut-legend");
-				legend.innerHTML = "";
-				for (let entry of entries) {
-					cat = categories[entry[0]] || {color: "#6b7280"};
-					p = (entry[1] / total * 100).toFixed(0);
-					legend.innerHTML += `<div class="flex items-center justify-between text-sm"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full"></div><span class="text-gray-300">${entry[0]}</span></div><span class="text-gray-400">${p}%</span></div>`;
-				}
-			}
-			function renderAll() {
-				renderKPIs();
-				renderTransactions();
-				renderPortfolio();
-				renderBudget();
-				renderActivity();
-				renderNotifications();
-				drawRevenueChart();
-				drawDonutChart();
-			}
-
-			seedData();
-			renderAll();
-
-			window.addEventListener("resize", () => {
-				drawRevenueChart();
-				drawDonutChart();
-			}
-			);
-
-			document.querySelectorAll("[id^=modal-]").forEach(
-				(modal) => {
-					modal.addEventListener("click", (e) => {
-						if (e.target === modal) {
-							modal.classList.add("hidden");
-							modal.classList.remove("flex");
-						}
-					}
-					);
-				}
-			);
-		</script>
-	</body>
+   //Close modals on backdrop click
+   document.querySelectorAll("[id^=modal-]").forEach(
+    (modal) => {
+     modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+       modal.classList.add("hidden");
+       modal.classList.remove("flex");
+      }
+     }
+     );
+    }
+   );
+  </script>
+ </body>
 </html>

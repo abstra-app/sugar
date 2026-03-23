@@ -1,0 +1,12 @@
+html:
+ body:
+  script:
+   greeting = text!:
+    Hello, world!
+    This is raw text.
+    No quotes needed.
+   message = text!:
+    User {name} logged in.
+    Welcome back!
+   console.log(greeting)
+   console.log(message)

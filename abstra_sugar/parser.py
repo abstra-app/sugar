@@ -40,12 +40,56 @@ def _split_script_segments(tokens: List[Token]) -> List[Token]:
     i = 0
     while i < len(tokens):
         token = tokens[i]
+        if token.type == "blank":
+            i += 1
+            continue
+        if token.type == "comment":
+            result.append(token)
+            i += 1
+            continue
         if token.type != "line":
             i += 1
             continue
 
         parts = _split_respecting_parens(token.head)
         tag = parts[0].split(".")[0] if parts and parts[0] else ""
+
+        # raw-body blocks: markdown!, math!, svg!
+        # these preserve comments and blank lines as-is
+        _RAW_BODY_TAGS = {"markdown!", "math!", "svg!"}
+        if tag in _RAW_BODY_TAGS and token.has_colon and not token.text:
+            result.append(token)
+            block_indent = token.indent
+            i += 1
+            body_lines: List[str] = []
+            base_indent = block_indent + 1
+            while i < len(tokens):
+                t = tokens[i]
+                if t.type == "line" and t.indent <= block_indent:
+                    break
+                if t.type == "blank":
+                    body_lines.append("")
+                elif t.type == "comment":
+                    prefix = " " * (t.indent - base_indent)
+                    body_lines.append(f"{prefix}{t.head}")
+                elif t.type == "line":
+                    prefix = " " * (t.indent - base_indent)
+                    if t.has_colon and t.text:
+                        body_lines.append(f"{prefix}{t.head}: {t.text}")
+                    elif t.has_colon:
+                        body_lines.append(f"{prefix}{t.head}:")
+                    else:
+                        body_lines.append(f"{prefix}{t.head}")
+                i += 1
+            while body_lines and body_lines[-1] == "":
+                body_lines.pop()
+            body = "\n".join(body_lines)
+            body_type = tag.replace("!", "_body")  # "markdown_body" etc.
+            result.append(
+                Token(body_type, block_indent + 1, body, "", False)
+            )
+            continue
+
         if tag != "script":
             result.append(token)
             i += 1
@@ -55,7 +99,7 @@ def _split_script_segments(tokens: List[Token]) -> List[Token]:
         script_indent = token.indent
         i += 1
 
-        body_lines: List[str] = []
+        body_lines2: List[str] = []
         base_indent = script_indent + 1
 
         while i < len(tokens):
@@ -63,24 +107,27 @@ def _split_script_segments(tokens: List[Token]) -> List[Token]:
             if t.type == "line" and t.indent <= script_indent:
                 break
             if t.type == "blank":
-                body_lines.append("")
+                body_lines2.append("")
             elif t.type == "comment":
-                pass
+                prefix = " " * (t.indent - base_indent)
+                # # comment → // comment
+                text = t.head[2:] if t.head.startswith("# ") else t.head[1:]
+                body_lines2.append(f"{prefix}//{text}")
             elif t.type == "line":
-                prefix = "\t" * (t.indent - base_indent)
+                prefix = " " * (t.indent - base_indent)
                 if t.has_colon and t.text:
-                    body_lines.append(f"{prefix}{t.head}: {t.text}")
+                    body_lines2.append(f"{prefix}{t.head}: {t.text}")
                 elif t.has_colon:
-                    body_lines.append(f"{prefix}{t.head}:")
+                    body_lines2.append(f"{prefix}{t.head}:")
                 else:
-                    body_lines.append(f"{prefix}{t.head}")
+                    body_lines2.append(f"{prefix}{t.head}")
             i += 1
 
         # trim trailing blank lines
-        while body_lines and body_lines[-1] == "":
-            body_lines.pop()
+        while body_lines2 and body_lines2[-1] == "":
+            body_lines2.pop()
 
-        body = "\n".join(body_lines)
+        body = "\n".join(body_lines2)
         result.append(Token("script_body", script_indent + 1, body, "", False))
 
     return result
@@ -94,7 +141,15 @@ def _build_tree(tokens: List[Token]) -> list:
     stack: List[Tuple[int, dict]] = []
 
     for token in tokens:
-        if token.type in ("blank", "comment"):
+        if token.type == "blank":
+            continue
+        if token.type == "comment":
+            # pass comments through as leaf nodes (no children)
+            item = {"token": token, "children": []}
+            if stack:
+                stack[-1][1]["children"].append(item)
+            else:
+                root.append(item)
             continue
 
         item = {"token": token, "children": []}
@@ -130,6 +185,12 @@ IMPLICIT_CHILDREN = {
 def _parse_node(item: dict, parent_tag: str = "") -> Node:
     token: Token = item["token"]
     children: list = item["children"]
+
+    # comment node
+    if token.type == "comment":
+        from .ast import Comment
+        text = token.head[2:] if token.head.startswith("# ") else token.head[1:]
+        return Comment(text=text)
 
     # component definition: name = (params):
     m = re.match(r"(\w+)\s*=\s*\(([^)]*)\)$", token.head)
@@ -173,10 +234,96 @@ def _parse_node(item: dict, parent_tag: str = "") -> Node:
             elif first not in HTML_TAGS and "=" in first:
                 head = implicit_tag + " " + head
 
+    # math!: literal in HTML context
+    if token.head == "math!":
+        from .ast import MathLiteral
+        source = ""
+        for child in children:
+            if child["token"].type == "math_body":
+                source = child["token"].head
+                break
+        return MathLiteral(source=source)
+
+    # svg!: literal in HTML context
+    if token.head == "svg!" or token.head.startswith("svg!.") \
+            or token.head.startswith("svg!#") \
+            or (token.head.startswith("svg! ") and "x" in token.head):
+        from .ast import SvgLiteral
+        # parse "svg! WxH" or "svg!.class WxH"
+        head_parts = token.head.split()
+        tag_part = head_parts[0]  # "svg!" or "svg!.class"
+        rest = tag_part[4:]  # after "svg!"
+        _, classes, attrs = _parse_element_def("svg" + rest)
+        # check for WxH dimension
+        for p in head_parts[1:]:
+            if "x" in p and p.replace("x", "").replace(".", "").isdigit():
+                w, h = p.split("x", 1)
+                attrs["viewBox"] = f"0 0 {w} {h}"
+                attrs["width"] = w
+                attrs["height"] = h
+                break
+            else:
+                # treat as attribute
+                if "=" in p:
+                    k, v = p.split("=", 1)
+                    attrs[k] = v
+                else:
+                    attrs[p] = True
+        source = ""
+        for child in children:
+            if child["token"].type == "svg_body":
+                source = child["token"].head
+                break
+        return SvgLiteral(classes=classes, attributes=attrs, source=source)
+
+    # table!: literal in HTML context
+    if token.head == "table!" or token.head.startswith("table!.") \
+            or token.head.startswith("table!#"):
+        from .ast import TableLiteral
+        rest = token.head[6:]  # after "table!"
+        _, classes, attrs = _parse_element_def("table" + rest)
+        headers: list = []
+        rows: list = []
+        for child in children:
+            ct = child["token"]
+            line = ct.head + (": " + ct.text if ct.has_colon and ct.text else
+                              ":" if ct.has_colon else "")
+            cells = [c.strip() for c in line.split("|")]
+            if not headers:
+                headers = cells
+            else:
+                rows.append(cells)
+        return TableLiteral(
+            classes=classes, attributes=attrs, headers=headers, rows=rows
+        )
+
+    # markdown!: literal in HTML context
+    if token.head == "markdown!" or token.head.startswith("markdown!.") \
+            or token.head.startswith("markdown!#"):
+        from .ast import MarkdownLiteral
+        rest = token.head[9:]  # after "markdown!"
+        _, classes, attrs = _parse_element_def("div" + rest)
+        # body comes from the markdown_body token (preserves # headings)
+        source = ""
+        for child in children:
+            if child["token"].type == "markdown_body":
+                source = child["token"].head
+                break
+        return MarkdownLiteral(
+            classes=classes, attributes=attrs, source=source
+        )
+
     tag, classes, attrs = _parse_element_def(head)
 
     if tag == "style":
-        rules = [_parse_style_item(child) for child in children]
+        rules = []
+        for child in children:
+            ct = child["token"]
+            if ct.type == "comment":
+                text = ct.head[2:] if ct.head.startswith("# ") else ct.head[1:]
+                rules.append(StyleRule(selector="", properties=[("/*", text + " */")]))
+            else:
+                rules.append(_parse_style_item(child))
         return StyleElement(classes=classes, attributes=attrs, rules=rules)
 
     if tag == "script":
@@ -276,10 +423,14 @@ def _parse_style_item(item: dict) -> StyleRule:
         props = []
         child_rules = []
         for child in children:
+            ct: Token = child["token"]
+            if ct.type == "comment":
+                text = ct.head[2:] if ct.head.startswith("# ") else ct.head[1:]
+                props.append(("/*", text + " */"))
+                continue
             if child["children"]:
                 child_rules.append(_parse_style_item(child))
             else:
-                ct: Token = child["token"]
                 if ct.has_colon:
                     props.append((ct.head, ct.text))
                 else:

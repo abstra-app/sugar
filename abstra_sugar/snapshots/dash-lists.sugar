@@ -1,0 +1,33 @@
+html:
+ body:
+  script:
+   # Simple values
+   nums =:
+    1
+    2
+    3
+
+   # String values
+   names =:
+    "Alice"
+    "Bob"
+
+   # Objects
+   items =:
+    :
+     id: 1
+     label: "First"
+    :
+     id: 2
+     label: "Second"
+
+   # Single item array
+   solo =:
+    "only one"
+
+   # Nested arrays (object with array value)
+   matrix =:
+    rows: []
+    cols: []
+
+   console.log(nums, names, items, solo, matrix)

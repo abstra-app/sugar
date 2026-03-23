@@ -1,0 +1,8 @@
+html:
+ body:
+  p: Einstein's equation:
+  math!:
+   E = mc^2
+  p: Quadratic formula:
+  math!:
+   x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}

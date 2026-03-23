@@ -5,10 +5,21 @@ from .tokens import Token
 
 def find_colon(line: str) -> int:
     depth = 0
+    in_string: str | None = None  # tracks quote char: ' or "
     for i, ch in enumerate(line):
-        if ch == "(":
+        # string tracking
+        if in_string:
+            if ch == in_string and (i == 0 or line[i - 1] != "\\"):
+                in_string = None
+            continue
+        if ch in ('"', "'"):
+            in_string = ch
+            continue
+
+        # depth tracking for (), {}, []
+        if ch in ("(", "{", "["):
             depth += 1
-        elif ch == ")":
+        elif ch in (")", "}", "]"):
             depth -= 1
         elif ch == ":" and depth == 0:
             # skip :// (URLs)
@@ -37,7 +48,7 @@ def scan(code: str) -> List[Token]:
 
         indent = 0
         for ch in raw_line:
-            if ch == "\t":
+            if ch == " ":
                 indent += 1
             else:
                 break

@@ -1,7 +1,9 @@
 html:
-	script:
-		label(x):
-			return x > 0 ? "positive" : "non-positive"
+ script:
+  label(x):
+   return x > 0 ? "positive" : "non-positive"
 
-		obj = {name: "foo", age: 30}
-		console.log(obj.name)
+  obj =:
+   name: "foo"
+   age: 30
+  console.log(obj.name)

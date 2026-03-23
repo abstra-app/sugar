@@ -1,0 +1,12 @@
+html:
+ head:
+  title: My Page
+ body:
+  .container:
+   h1: Hello
+   p: World
+  script:
+   x = 1
+   arr.push({a: 1})
+   items = []
+   obj = {}

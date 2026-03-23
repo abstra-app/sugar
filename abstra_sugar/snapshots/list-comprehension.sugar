@@ -1,0 +1,17 @@
+html:
+ body:
+  script:
+   nums =:
+    1
+    -2
+    3
+    -4
+    5
+   doubled = [x * 2 for x of nums]
+   positives = [x for x of nums if x > 0]
+   squaredPos = [x * x for x of nums if x > 0]
+   names =:
+    "alice"
+    "bob"
+   upper = [s.toUpperCase() for s of names]
+   console.log(doubled, positives, squaredPos, upper)

@@ -1,0 +1,16 @@
+html:
+ body:
+  script:
+   # Inline arrow in method call
+   sorted = nums.sort((a, b): a - b)
+   doubled = nums.map((x): x * 2)
+
+   # Arrow as event handler
+   document.addEventListener("click", (e): console.log(e.target))
+
+   # Multi-line arrow
+   fetchData(url):
+    return fetch(url).then((res): res.json())
+
+   # Arrow with no args
+   later = setTimeout((): console.log("done"), 1000)

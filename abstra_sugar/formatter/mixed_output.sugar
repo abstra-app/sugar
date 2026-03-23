@@ -1,0 +1,15 @@
+html:
+ body:
+  .wrapper:
+   ul:
+    : Item 1
+    : Item 2
+  script:
+   data =:
+    name: "test"
+    count: 5
+   items =:
+    1
+    2
+    3
+   arr.map((x): x * 2)

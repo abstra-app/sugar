@@ -1,0 +1,3 @@
+script:
+ ship = {x: 1, y: 2, angle: 0}
+ config = {color: "red", size: 10}

@@ -1,12 +1,12 @@
 html:
-	script:
-		class Animal:
-			constructor(name):
-				this.name = name
+ script:
+  class Animal:
+   constructor(name):
+    this.name = name
 
-			speak():
-				console.log(`${this.name} makes a noise`)
+   speak():
+    console.log(`${this.name} makes a noise`)
 
-		class Dog extends Animal:
-			speak():
-				console.log(`${this.name} barks`)
+  class Dog extends Animal:
+   speak():
+    console.log(`${this.name} barks`)

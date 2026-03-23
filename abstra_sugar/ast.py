@@ -63,4 +63,36 @@ class ScriptElement:
     body: str = ""
 
 
-Node = Union[Element, StyleElement, ScriptElement, ForBlock, IfBlock, ComponentDef, ComponentCall]
+@dataclass
+class TableLiteral:
+    classes: List[str] = field(default_factory=list)
+    attributes: Dict[str, Union[str, bool]] = field(default_factory=dict)
+    headers: List[str] = field(default_factory=list)
+    rows: List[List[str]] = field(default_factory=list)
+
+
+@dataclass
+class MarkdownLiteral:
+    classes: List[str] = field(default_factory=list)
+    attributes: Dict[str, Union[str, bool]] = field(default_factory=dict)
+    source: str = ""
+
+
+@dataclass
+class MathLiteral:
+    source: str = ""
+
+
+@dataclass
+class SvgLiteral:
+    classes: List[str] = field(default_factory=list)
+    attributes: Dict[str, Union[str, bool]] = field(default_factory=dict)
+    source: str = ""
+
+
+@dataclass
+class Comment:
+    text: str = ""
+
+
+Node = Union[Element, StyleElement, ScriptElement, ForBlock, IfBlock, ComponentDef, ComponentCall, TableLiteral, MarkdownLiteral, MathLiteral, SvgLiteral, Comment]

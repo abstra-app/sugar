@@ -1,0 +1,11 @@
+html:
+ body:
+  #app:
+  script:
+   render(name, items):
+    app = document.getElementById("app")
+    app.innerHTML = html!:
+     h1: Hello {name}
+     ul:
+      : Item count is {items.length}
+   render("World", [1, 2, 3])

@@ -1,0 +1,13 @@
+html:
+ body:
+  h1: Users
+  table!.striped.bordered:
+   Name  | Age | Email
+   Alice | 30  | alice@co.com
+   Bob   | 25  | bob@co.com
+  h2: Products
+  table!:
+   Product   | Price | Stock
+   Widget    | 9.99  | 42
+   Gadget    | 24.99 | 7
+   Doohickey | 4.50  | 100

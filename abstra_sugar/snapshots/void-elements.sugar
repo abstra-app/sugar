@@ -1,0 +1,11 @@
+html:
+ head:
+  meta charset=UTF-8:
+  meta name=viewport content=width=device-width:
+  link rel=stylesheet href=style.css:
+ body:
+  h1: Hello
+  hr:
+  img src=logo.png alt=Logo:
+  br:
+  input type=text placeholder=Name:

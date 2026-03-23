@@ -1,0 +1,23 @@
+html:
+ body:
+  markdown!.prose:
+   # Welcome
+
+   This is **bold** and *italic* text.
+
+   ## Features
+
+   - Fast compilation
+   - Clean syntax
+   - No quotes needed
+
+   ### Code example
+
+   Use `sugar()` to compile.
+
+   > Sugar is sweet.
+
+  markdown!:
+   Just a simple paragraph.
+
+   Another one with a [link](https://example.com).

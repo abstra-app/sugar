@@ -1,0 +1,232 @@
+html lang=en:
+ head:
+  meta charset=UTF-8:
+  meta name=viewport content=width=device-width,initial-scale=1.0:
+  title: Sugar — A concise language for the web
+  style:
+   :root:
+    --bg: #0a0a0b
+    --surface: #141416
+    --border: #23232a
+    --text: #e4e4e7
+    --muted: #71717a
+    --primary: #a78bfa
+    --primary-dim: rgba(167,139,250,0.15)
+    --green: #34d399
+    --green-dim: rgba(52,211,153,0.15)
+    --pink: #f472b6
+    --pink-dim: rgba(244,114,182,0.15)
+   *:
+    margin: 0
+    padding: 0
+    box-sizing: border-box
+   body:
+    background: var(--bg)
+    color: var(--text)
+    font-family: Inter, system-ui, -apple-system, sans-serif
+    line-height: 1.6
+   .container:
+    max-width: 860px
+    margin: 0 auto
+    padding: 0 24px
+   a:
+    color: var(--primary)
+    text-decoration: none
+   a:hover:
+    text-decoration: underline
+   code:
+    font-family: "JetBrains Mono", "Fira Code", monospace
+    font-size: 0.9em
+    background: var(--surface)
+    border: 1px solid var(--border)
+    border-radius: 4px
+    padding: 2px 6px
+   pre:
+    background: var(--surface)
+    border: 1px solid var(--border)
+    border-radius: 8px
+    padding: 20px 24px
+    overflow-x: auto
+    line-height: 1.5
+   pre code:
+    background: none
+    border: none
+    padding: 0
+   .hero:
+    text-align: center
+    padding: 80px 0 60px
+   .hero h1:
+    font-size: 3.5rem
+    font-weight: 800
+    letter-spacing: -0.03em
+    margin-bottom: 16px
+   .hero p:
+    font-size: 1.2rem
+    color: var(--muted)
+    max-width: 540px
+    margin: 0 auto
+   .badge:
+    display: inline-block
+    font-size: 0.75rem
+    font-weight: 600
+    padding: 4px 12px
+    border-radius: 999px
+    margin-bottom: 16px
+   .section:
+    padding: 48px 0
+    border-top: 1px solid var(--border)
+   .section h2:
+    font-size: 1.8rem
+    font-weight: 700
+    margin-bottom: 8px
+   .section p:
+    color: var(--muted)
+    margin-bottom: 24px
+   .grid:
+    display: grid
+    grid-template-columns: 1fr 1fr
+    gap: 16px
+   .compare:
+    display: grid
+    grid-template-columns: 1fr 1fr
+    gap: 0
+    border: 1px solid var(--border)
+    border-radius: 8px
+    overflow: hidden
+   .compare-side:
+    padding: 20px 24px
+   .compare-side:first-child:
+    border-right: 1px solid var(--border)
+   .compare-label:
+    font-size: 0.7rem
+    font-weight: 600
+    text-transform: uppercase
+    letter-spacing: 0.1em
+    margin-bottom: 12px
+   .feature-card:
+    background: var(--surface)
+    border: 1px solid var(--border)
+    border-radius: 8px
+    padding: 24px
+   .feature-card h3:
+    font-size: 1rem
+    font-weight: 600
+    margin-bottom: 4px
+   .feature-card p:
+    font-size: 0.85rem
+    color: var(--muted)
+   .tag:
+    display: inline-block
+    font-size: 0.65rem
+    font-weight: 600
+    padding: 2px 8px
+    border-radius: 4px
+    margin-bottom: 8px
+   .tag-html:
+    background: var(--pink-dim)
+    color: var(--pink)
+   .tag-js:
+    background: var(--primary-dim)
+    color: var(--primary)
+   .tag-css:
+    background: var(--green-dim)
+    color: var(--green)
+   .tag-data:
+    background: rgba(251,191,36,0.15)
+    color: #fbbf24
+   footer:
+    padding: 40px 0
+    border-top: 1px solid var(--border)
+    text-align: center
+    font-size: 0.85rem
+    color: var(--muted)
+   @media (max-width: 640px):
+    .hero h1:
+     font-size: 2.2rem
+    .grid:
+     grid-template-columns: 1fr
+    .compare:
+     grid-template-columns: 1fr
+    .compare-side:first-child:
+     border-right: none
+     border-bottom: 1px solid var(--border)
+
+ body:
+  .container:
+   .hero:
+    span.badge: style=background:var(--primary-dim);color:var(--primary) v0.2
+    h1: Sugar
+    p: A concise language that compiles to HTML, CSS, and JavaScript. Write less, build more.
+
+   .section:
+    h2: Why Sugar?
+    p: One syntax for everything. Indentation-based, no closing tags, no semicolons.
+    .compare:
+     .compare-side:
+      .compare-label: style=color:var(--muted) HTML
+      pre:
+       code: &lt;div class="card"&gt;\n  &lt;h3&gt;Hello&lt;/h3&gt;\n  &lt;p&gt;World&lt;/p&gt;\n&lt;/div&gt;
+     .compare-side:
+      .compare-label: style=color:var(--primary) Sugar
+      pre:
+       code: .card:\n h3: Hello\n p: World
+
+   .section:
+    h2: Features
+    .grid:
+     .feature-card:
+      span.tag.tag-html: HTML
+      h3: Implicit tags
+      p: div is implicit for classes and IDs. Child tags like li, td, option are implicit inside their parents.
+     .feature-card:
+      span.tag.tag-js: JS
+      h3: Clean script blocks
+      p: No function keyword, no semicolons, arrow shorthand with (x): instead of (x) =>.
+     .feature-card:
+      span.tag.tag-css: CSS
+      h3: Nested styles & mixins
+      p: Nesting, @keyframes, and reusable mixins with @apply — all in indentation syntax.
+     .feature-card:
+      span.tag.tag-data: DATA
+      h3: table!, text!, math!
+      p: Template literals for tabular data, raw text, LaTeX math, Markdown, and SVG.
+     .feature-card:
+      span.tag.tag-html: HTML
+      h3: Components
+      p: Define reusable components with parameters and slots. Compose them freely.
+     .feature-card:
+      span.tag.tag-js: JS
+      h3: Collections
+      p: Flat objects with =:, arrays with -, list comprehensions, and table!: for structured data.
+
+   .section:
+    h2: Template literals
+    p: Embed different languages inside script blocks.
+    .grid:
+     div:
+      h3: style=margin-bottom:8px html!:
+      pre:
+       code: el.innerHTML = html!:\n h1: Hello {name}\n p: Welcome
+     div:
+      h3: style=margin-bottom:8px table!:
+      pre:
+       code: users = table!:\n name   | age | role\n "Alice" | 30  | "admin"\n "Bob"   | 25  | "user"
+     div:
+      h3: style=margin-bottom:8px text!:
+      pre:
+       code: msg = text!:\n Hello, {name}!\n Welcome to Sugar.
+     div:
+      h3: style=margin-bottom:8px svg!:
+      pre:
+       code: svg! 200x200:\n circle 100 100 r=50 fill=red\n path stroke=blue:\n  M 0 0\n  L 200 200
+
+   .section:
+    h2: Install
+    pre:
+     code: pip install abstra-sugar
+    p: style=margin-top:16px Then in Python:
+    pre:
+     code: from abstra_sugar import sugar\nprint(sugar("h1: Hello"))
+
+   footer:
+    p: Built by Abstra. Open source on GitHub.

@@ -1,0 +1,12 @@
+icon = (emoji):
+ span.icon: {emoji}
+
+badge = (text, color):
+ span.badge:
+  icon("{color}")
+  span: {text}
+
+html:
+ body:
+  badge("New", "🟢")
+  badge("Warning", "🟡")

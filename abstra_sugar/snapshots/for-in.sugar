@@ -1,5 +1,5 @@
 html:
-	script:
-		showKeys(obj):
-			for key in obj:
-				console.log(key)
+ script:
+  showKeys(obj):
+   for key in obj:
+    console.log(key)

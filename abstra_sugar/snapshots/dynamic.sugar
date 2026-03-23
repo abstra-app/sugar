@@ -1,25 +1,25 @@
 html:
-	body:
-		#app:
-			.header:
-				h1: {title}
-			.content:
-				ul:
-					for user of users:
-						li: {user.name} - {user.email}
+ body:
+  #app:
+   .header:
+    h1: {title}
+   .content:
+    ul:
+     for user of users:
+      li: {user.name} - {user.email}
 
-				if show_footer:
-					p.footer: Total: {len(users)} users
+    if show_footer:
+     p.footer: Total: {len(users)} users
 
-				table:
-					for group of groups:
-						tr:
-							th: {group.name}
-						for item of group.items:
-							tr:
-								: {item.key}
-								: {item.value}
+    table:
+     for group of groups:
+      tr:
+       th: {group.name}
+      for item of group.items:
+       tr:
+        : {item.key}
+        : {item.value}
 
-				div:
-					for page of pages:
-						a href=/page/{page.id}: {page.title}
+    div:
+     for page of pages:
+      a href=/page/{page.id}: {page.title}

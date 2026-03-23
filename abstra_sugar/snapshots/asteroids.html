@@ -1,299 +1,326 @@
 <html>
-	<head>
-		<style>
-			* {
-				margin: 0;
-				padding: 0;
-			}
-			body {
-				background: #000;
-				overflow: hidden;
-			}
-			canvas {
-				display: block;
-			}
-		</style>
-	</head>
-	<body>
-		<canvas id="game" width="800" height="600"></canvas>
-	</body>
-	<script>
-		canvas = document.getElementById("game");
-		ctx = canvas.getContext("2d");
+ <head>
+  <style>
+   * {
+    margin: 0;
+    padding: 0;
+   }
+   body {
+    background: #000;
+    overflow: hidden;
+   }
+   canvas {
+    display: block;
+   }
+  </style>
+ </head>
+ <body>
+  <canvas id="game" width="800" height="600"></canvas>
+ </body>
+ <script>
+  canvas = document.getElementById("game");
+  ctx = canvas.getContext("2d");
 
-		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-		keys = {};
-		bullets = [];
-		asteroids = [];
-		particles = [];
-		score = 0;
-		lives = 3;
-		gameOver = false;
+  //Game state
+  keys = {};
+  bullets = [];
+  asteroids = [];
+  particles = [];
+  score = 0;
+  lives = 3;
+  gameOver = false;
 
-		ship = {x: canvas.width / 2, y: canvas.height / 2, angle: 0, dx: 0, dy: 0, radius: 15};
+  //Ship
+  ship = {x: canvas.width / 2, y: canvas.height / 2, angle: 0, dx: 0, dy: 0, radius: 15};
+  //Input
+  document.addEventListener("keydown", (e) => keys[e.code] = true);
+  document.addEventListener("keyup", (e) => keys[e.code] = false);
 
-		document.addEventListener("keydown", (e) => keys[e.code] = true);
-		document.addEventListener("keyup", (e) => keys[e.code] = false);
+  //Helpers
+  function rand(min, max) {
+   return Math.random() * (max - min) + min;
+  }
 
-		function rand(min, max) {
-			return Math.random() * (max - min) + min;
-		}
+  function wrap(obj) {
+   if (obj.x < 0) {
+    obj.x = canvas.width;
+   }
+   if (obj.x > canvas.width) {
+    obj.x = 0;
+   }
+   if (obj.y < 0) {
+    obj.y = canvas.height;
+   }
+   if (obj.y > canvas.height) {
+    obj.y = 0;
+   }
+  }
 
-		function wrap(obj) {
-			if (obj.x < 0) {
-				obj.x = canvas.width;
-			}
-			if (obj.x > canvas.width) {
-				obj.x = 0;
-			}
-			if (obj.y < 0) {
-				obj.y = canvas.height;
-			}
-			if (obj.y > canvas.height) {
-				obj.y = 0;
-			}
-		}
+  function dist(a, b) {
+   dx = a.x - b.x;
+   dy = a.y - b.y;
+   return Math.sqrt(dx * dx + dy * dy);
+  }
 
-		function dist(a, b) {
-			dx = a.x - b.x;
-			dy = a.y - b.y;
-			return Math.sqrt(dx * dx + dy * dy);
-		}
+  //Spawn asteroids
+  function spawnAsteroid(x, y, radius) {
+   speed = rand(1, 3);
+   angle = rand(0, Math.PI * 2);
+   vertices = [];
+   count = Math.floor(rand(7, 12));
+   for (let i of Array.from({length: count}, (_, i) => i)) {
+    a = (i / count) * Math.PI * 2;
+    r = radius + rand(-radius * 0.3, radius * 0.3);
+    vertices.push({a: a, r: r});
+   }
+   asteroids.push({x: x, y: y, dx: Math.cos(angle) * speed, dy: Math.sin(angle) * speed, radius: radius, vertices: vertices});
+  }
 
-		function spawnAsteroid(x, y, radius) {
-			speed = rand(1, 3);
-			angle = rand(0, Math.PI * 2);
-			vertices = [];
-			count = Math.floor(rand(7, 12));
-			for (let i of Array.from({length: count}, (_, i) => i)) {
-				a = (i / count) * Math.PI * 2;
-				r = radius + rand(-radius * 0.3, radius * 0.3);
-				vertices.push({a: a, r: r});
-			}
-			asteroids.push({x: x, y: y, dx: Math.cos(angle) * speed, dy: Math.sin(angle) * speed, radius: radius, vertices: vertices});
-		}
+  function spawnWave() {
+   for (let i of Array.from({length: 5}, (_, i) => i)) {
+    x = rand(0, canvas.width);
+    y = rand(0, canvas.height);
+    while (dist({x: x, y: y}, ship) < 150) {
+     x = rand(0, canvas.width);
+     y = rand(0, canvas.height);
+    }
+    spawnAsteroid(x, y, rand(30, 50));
+   }
+  }
 
-		function spawnWave() {
-			for (let i of Array.from({length: 5}, (_, i) => i)) {
-				x = rand(0, canvas.width);
-				y = rand(0, canvas.height);
-				while (dist({x: x, y: y}, ship) < 150) {
-					x = rand(0, canvas.width);
-					y = rand(0, canvas.height);
-				}
-				spawnAsteroid(x, y, rand(30, 50));
-			}
-		}
+  spawnWave();
 
-		spawnWave();
+  //Shoot
+  function shoot() {
+   bullets.push({x: ship.x + Math.cos(ship.angle) * ship.radius, y: ship.y + Math.sin(ship.angle) * ship.radius, dx: Math.cos(ship.angle) * 7 + ship.dx, dy: Math.sin(ship.angle) * 7 + ship.dy, life: 60});
+  }
 
-		function shoot() {
-			bullets.push({x: ship.x + Math.cos(ship.angle) * ship.radius, y: ship.y + Math.sin(ship.angle) * ship.radius, dx: Math.cos(ship.angle) * 7 + ship.dx, dy: Math.sin(ship.angle) * 7 + ship.dy, life: 60});
-		}
+  //Explosion particles
+  function explode(x, y, count) {
+   for (let i of Array.from({length: count}, (_, i) => i)) {
+    angle = rand(0, Math.PI * 2);
+    speed = rand(1, 4);
+    particles.push({x: x, y: y, dx: Math.cos(angle) * speed, dy: Math.sin(angle) * speed, life: rand(15, 30)});
+   }
+  }
 
-		function explode(x, y, count) {
-			for (let i of Array.from({length: count}, (_, i) => i)) {
-				angle = rand(0, Math.PI * 2);
-				speed = rand(1, 4);
-				particles.push({x: x, y: y, dx: Math.cos(angle) * speed, dy: Math.sin(angle) * speed, life: rand(15, 30)});
-			}
-		}
+  //Update
+  function update() {
+   if (gameOver) {
+    return;
+   }
 
-		function update() {
-			if (gameOver) {
-				return;
-			}
+   //Ship rotation and thrust
+   if (keys["ArrowLeft"]) {
+    ship.angle -= 0.05;
+   }
+   if (keys["ArrowRight"]) {
+    ship.angle += 0.05;
+   }
+   if (keys["ArrowUp"]) {
+    ship.dx += Math.cos(ship.angle) * 0.1;
+    ship.dy += Math.sin(ship.angle) * 0.1;
+   }
 
-			if (keys["ArrowLeft"]) {
-				ship.angle -= 0.05;
-			}
-			if (keys["ArrowRight"]) {
-				ship.angle += 0.05;
-			}
-			if (keys["ArrowUp"]) {
-				ship.dx += Math.cos(ship.angle) * 0.1;
-				ship.dy += Math.sin(ship.angle) * 0.1;
-			}
+   //Friction
+   ship.dx *= 0.99;
+   ship.dy *= 0.99;
+   ship.x += ship.dx;
+   ship.y += ship.dy;
+   wrap(ship);
 
-			ship.dx *= 0.99;
-			ship.dy *= 0.99;
-			ship.x += ship.dx;
-			ship.y += ship.dy;
-			wrap(ship);
+   //Bullets
+   for (let b of bullets) {
+    b.x += b.dx;
+    b.y += b.dy;
+    b.life--;
+   }
+   bullets = bullets.filter((b) => b.life > 0);
 
-			for (let b of bullets) {
-				b.x += b.dx;
-				b.y += b.dy;
-				b.life--;
-			}
-			bullets = bullets.filter((b) => b.life > 0);
+   //Asteroids
+   for (let a of asteroids) {
+    a.x += a.dx;
+    a.y += a.dy;
+    wrap(a);
+   }
 
-			for (let a of asteroids) {
-				a.x += a.dx;
-				a.y += a.dy;
-				wrap(a);
-			}
+   //Bullet-asteroid collisions
+   newAsteroids = [];
+   for (let a of asteroids) {
+    hit = false;
+    for (let b of bullets) {
+     if (dist(a, b) < a.radius) {
+      hit = true;
+      b.life = 0;
+      score += Math.floor(100 / a.radius * 10);
+      explode(a.x, a.y, 8);
+      if (a.radius > 15) {
+       newAsteroids.push();
+       spawnAsteroid(a.x, a.y, a.radius * 0.6);
+       spawnAsteroid(a.x, a.y, a.radius * 0.6);
+      }
+     }
+    }
+    if (!hit) {
+     newAsteroids.push(a);
+    }
+   }
+   asteroids = newAsteroids;
 
-			newAsteroids = [];
-			for (let a of asteroids) {
-				hit = false;
-				for (let b of bullets) {
-					if (dist(a, b) < a.radius) {
-						hit = true;
-						b.life = 0;
-						score += Math.floor(100 / a.radius * 10);
-						explode(a.x, a.y, 8);
-						if (a.radius > 15) {
-							newAsteroids.push();
-							spawnAsteroid(a.x, a.y, a.radius * 0.6);
-							spawnAsteroid(a.x, a.y, a.radius * 0.6);
-						}
-					}
-				}
-				if (!hit) {
-					newAsteroids.push(a);
-				}
-			}
-			asteroids = newAsteroids;
+   //Ship-asteroid collision
+   for (let a of asteroids) {
+    if (dist(ship, a) < ship.radius + a.radius) {
+     lives--;
+     explode(ship.x, ship.y, 20);
+     ship.x = canvas.width / 2;
+     ship.y = canvas.height / 2;
+     ship.dx = 0;
+     ship.dy = 0;
+     if (lives <= 0) {
+      gameOver = true;
+     }
+    }
+   }
 
-			for (let a of asteroids) {
-				if (dist(ship, a) < ship.radius + a.radius) {
-					lives--;
-					explode(ship.x, ship.y, 20);
-					ship.x = canvas.width / 2;
-					ship.y = canvas.height / 2;
-					ship.dx = 0;
-					ship.dy = 0;
-					if (lives <= 0) {
-						gameOver = true;
-					}
-				}
-			}
+   //Particles
+   for (let p of particles) {
+    p.x += p.dx;
+    p.y += p.dy;
+    p.life--;
+   }
+   particles = particles.filter((p) => p.life > 0);
 
-			for (let p of particles) {
-				p.x += p.dx;
-				p.y += p.dy;
-				p.life--;
-			}
-			particles = particles.filter((p) => p.life > 0);
+   //Respawn wave
+   if (asteroids.length == 0) {
+    spawnWave();
+   }
+  }
 
-			if (asteroids.length == 0) {
-				spawnWave();
-			}
-		}
+  //Draw
+  function draw() {
+   ctx.fillStyle = "#000";
+   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-		function draw() {
-			ctx.fillStyle = "#000";
-			ctx.fillRect(0, 0, canvas.width, canvas.height);
+   if (!gameOver) {
+    //Draw ship
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    ctx.rotate(ship.angle);
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(15, 0);
+    ctx.lineTo(-10, -10);
+    ctx.lineTo(-5, 0);
+    ctx.lineTo(-10, 10);
+    ctx.closePath();
+    ctx.stroke();
 
-			if (!gameOver) {
-				ctx.save();
-				ctx.translate(ship.x, ship.y);
-				ctx.rotate(ship.angle);
-				ctx.strokeStyle = "#fff";
-				ctx.lineWidth = 1.5;
-				ctx.beginPath();
-				ctx.moveTo(15, 0);
-				ctx.lineTo(-10, -10);
-				ctx.lineTo(-5, 0);
-				ctx.lineTo(-10, 10);
-				ctx.closePath();
-				ctx.stroke();
+    //Thrust flame
+    if (keys["ArrowUp"]) {
+     ctx.strokeStyle = "#f80";
+     ctx.beginPath();
+     ctx.moveTo(-5, -4);
+     ctx.lineTo(-15 - Math.random() * 5, 0);
+     ctx.lineTo(-5, 4);
+     ctx.stroke();
+    }
 
-				if (keys["ArrowUp"]) {
-					ctx.strokeStyle = "#f80";
-					ctx.beginPath();
-					ctx.moveTo(-5, -4);
-					ctx.lineTo(-15 - Math.random() * 5, 0);
-					ctx.lineTo(-5, 4);
-					ctx.stroke();
-				}
+    ctx.restore();
+   }
 
-				ctx.restore();
-			}
+   //Draw bullets
+   ctx.fillStyle = "#fff";
+   for (let b of bullets) {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+   }
 
-			ctx.fillStyle = "#fff";
-			for (let b of bullets) {
-				ctx.beginPath();
-				ctx.arc(b.x, b.y, 2, 0, Math.PI * 2);
-				ctx.fill();
-			}
+   //Draw asteroids
+   ctx.strokeStyle = "#aaa";
+   ctx.lineWidth = 1.5;
+   for (let a of asteroids) {
+    ctx.beginPath();
+    for (let j of Array.from({length: a.vertices.length}, (_, i) => i)) {
+     v = a.vertices[j];
+     px = a.x + Math.cos(v.a) * v.r;
+     py = a.y + Math.sin(v.a) * v.r;
+     if (j == 0) {
+      ctx.moveTo(px, py);
+     }
+     else {
+      ctx.lineTo(px, py);
+     }
+    }
+    ctx.closePath();
+    ctx.stroke();
+   }
 
-			ctx.strokeStyle = "#aaa";
-			ctx.lineWidth = 1.5;
-			for (let a of asteroids) {
-				ctx.beginPath();
-				for (let j of Array.from({length: a.vertices.length}, (_, i) => i)) {
-					v = a.vertices[j];
-					px = a.x + Math.cos(v.a) * v.r;
-					py = a.y + Math.sin(v.a) * v.r;
-					if (j == 0) {
-						ctx.moveTo(px, py);
-					}
-					else: {ctx.lineTo(px, py)};
-				}
-				ctx.closePath();
-				ctx.stroke();
-			}
+   //Draw particles
+   for (let p of particles) {
+    alpha = p.life / 30;
+    ctx.fillStyle = `rgba(255, 200, 50, ${alpha})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+    ctx.fill();
+   }
 
-			for (let p of particles) {
-				alpha = p.life / 30;
-				ctx.fillStyle = `rgba(255, 200, 50, ${alpha})`;
-				ctx.beginPath();
-				ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-				ctx.fill();
-			}
+   //HUD
+   ctx.fillStyle = "#fff";
+   ctx.font = "20px monospace";
+   ctx.fillText(`Score: ${score}`, 20, 30);
+   ctx.fillText(`Lives: ${lives}`, 20, 55);
 
-			ctx.fillStyle = "#fff";
-			ctx.font = "20px monospace";
-			ctx.fillText(`Score: ${score}`, 20, 30);
-			ctx.fillText(`Lives: ${lives}`, 20, 55);
+   if (gameOver) {
+    ctx.fillStyle = "#fff";
+    ctx.font = "48px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+    ctx.font = "20px monospace";
+    ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
+    ctx.fillText("Press R to restart", canvas.width / 2, canvas.height / 2 + 70);
+    ctx.textAlign = "left";
+   }
+  }
 
-			if (gameOver) {
-				ctx.fillStyle = "#fff";
-				ctx.font = "48px monospace";
-				ctx.textAlign = "center";
-				ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
-				ctx.font = "20px monospace";
-				ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
-				ctx.fillText("Press R to restart", canvas.width / 2, canvas.height / 2 + 70);
-				ctx.textAlign = "left";
-			}
-		}
+  //Restart
+  document.addEventListener("keydown", (e) => {
+   if (e.code == "KeyR" && gameOver) {
+    score = 0;
+    lives = 3;
+    gameOver = false;
+    asteroids = [];
+    bullets = [];
+    particles = [];
+    ship.x = canvas.width / 2;
+    ship.y = canvas.height / 2;
+    ship.dx = 0;
+    ship.dy = 0;
+    spawnWave();
+   }
+  }
+  );
 
-		document.addEventListener("keydown", (e) => {
-			if (e.code == "KeyR" && gameOver) {
-				score = 0;
-				lives = 3;
-				gameOver = false;
-				asteroids = [];
-				bullets = [];
-				particles = [];
-				ship.x = canvas.width / 2;
-				ship.y = canvas.height / 2;
-				ship.dx = 0;
-				ship.dy = 0;
-				spawnWave();
-			}
-		}
-		);
+  //Shoot on space
+  shootCooldown = 0;
+  document.addEventListener("keydown", (e) => {
+   if (e.code == "Space" && !gameOver) {
+    shoot();
+   }
+  }
+  );
 
-		shootCooldown = 0;
-		document.addEventListener("keydown", (e) => {
-			if (e.code == "Space" && !gameOver) {
-				shoot();
-			}
-		}
-		);
+  //Game loop
+  function loop() {
+   update();
+   draw();
+   requestAnimationFrame(loop);
+  }
 
-		function loop() {
-			update();
-			draw();
-			requestAnimationFrame(loop);
-		}
-
-		loop();
-	</script>
+  loop();
+ </script>
 </html>

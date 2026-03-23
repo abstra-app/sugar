@@ -34,7 +34,7 @@ def test_element_with_text():
 
 
 def test_nested_elements():
-    nodes = parse(scan("div:\n\tp: hello"))
+    nodes = parse(scan("div:\n p: hello"))
     div = nodes[0]
     assert isinstance(div, Element)
     assert len(div.children) == 1
@@ -51,7 +51,7 @@ def test_boolean_attr():
 
 
 def test_style_block():
-    source = "style:\n\t.table-header:\n\t\tfont-weight: bold"
+    source = "style:\n .table-header:\n  font-weight: bold"
     nodes = parse(scan(source))
     assert isinstance(nodes[0], StyleElement)
     assert len(nodes[0].rules) == 1
@@ -61,19 +61,19 @@ def test_style_block():
 
 
 def test_script_block():
-    source = "script:\n\tconsole.log(t)"
+    source = "script:\n console.log(t)"
     nodes = parse(scan(source))
     assert isinstance(nodes[0], ScriptElement)
     assert nodes[0].body == "console.log(t)"
 
 
 def test_script_block_raw():
-    source = "script:\n\tif x > 0:\n\t\tconsole.log(x)"
+    source = "script:\n if x > 0:\n  console.log(x)"
     nodes = parse(scan(source))
     script = nodes[0]
     assert isinstance(script, ScriptElement)
     assert "if x > 0:" in script.body
-    assert "\tconsole.log(x)" in script.body
+    assert " console.log(x)" in script.body
 
 
 def test_parse_inline():

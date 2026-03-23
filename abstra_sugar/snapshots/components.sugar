@@ -1,38 +1,38 @@
 card = (title):
-	.bg-gray-900.rounded-2xl.border.border-gray-800.p-6:
-		h3.font-semibold: {title}
-		slot:
+ .bg-gray-900.rounded-2xl.border.border-gray-800.p-6:
+  h3.font-semibold: {title}
+  slot:
 
 modal = (title):
-	.fixed.inset-0.z-50:
-		.bg-gray-900.rounded-2xl.max-w-lg:
-			h3: {title}
-			slot:
+ .fixed.inset-0.z-50:
+  .bg-gray-900.rounded-2xl.max-w-lg:
+   h3: {title}
+   slot:
 
 html:
-	head:
-		style:
-			reset = ():
-				margin: 0
-				padding: 0
-				box-sizing: border-box
+ head:
+  style:
+   reset = ():
+    margin: 0
+    padding: 0
+    box-sizing: border-box
 
-			body:
-				@reset()
-				font-family: sans-serif
+   body:
+    @reset()
+    font-family: sans-serif
 
-			.card:
-				@reset()
-				border: 1px solid #ddd
-	body:
-		card("Users"):
-			ul:
-				: Alice
-				: Bob
+   .card:
+    @reset()
+    border: 1px solid #ddd
+ body:
+  card("Users"):
+   ul:
+    : Alice
+    : Bob
 
-		card("Settings"):
-			p: Nothing here yet
+  card("Settings"):
+   p: Nothing here yet
 
-		modal("Confirm"):
-			p: Are you sure?
-			button: Yes
+  modal("Confirm"):
+   p: Are you sure?
+   button: Yes

@@ -13,7 +13,7 @@ def test_element_with_text():
 
 
 def test_indentation():
-    tokens = scan("html:\n\thead:")
+    tokens = scan("html:\n head:")
     assert tokens == [
         Token("line", 0, "html", "", True),
         Token("line", 1, "head", "", True),
@@ -21,7 +21,7 @@ def test_indentation():
 
 
 def test_no_colon():
-    tokens = scan("\t\tconsole.log(t)")
+    tokens = scan("  console.log(t)")
     assert tokens == [Token("line", 2, "console.log(t)", "", False)]
 
 
@@ -42,7 +42,7 @@ def test_blank_lines():
 
 
 def test_style_property():
-    tokens = scan("\t\t\tfont-weight: bold")
+    tokens = scan("   font-weight: bold")
     assert tokens == [Token("line", 3, "font-weight", "bold", True)]
 
 
@@ -54,9 +54,52 @@ def test_inline_element_text():
 
 
 def test_comments():
-    tokens = scan("div:\n\t# This is a comment\n\tp: hello")
+    tokens = scan("div:\n # This is a comment\n p: hello")
     assert tokens == [
         Token("line", 0, "div", "", True),
         Token("comment", 1, "# This is a comment", "", False),
         Token("line", 1, "p", "hello", True),
+    ]
+
+
+# --- string tracking ---
+
+
+def test_colon_in_double_quoted_string():
+    tokens = scan('div title="10:30 AM":')
+    assert tokens == [Token("line", 0, 'div title="10:30 AM"', "", True)]
+
+
+def test_colon_in_single_quoted_string():
+    tokens = scan("div title='10:30 AM':")
+    assert tokens == [Token("line", 0, "div title='10:30 AM'", "", True)]
+
+
+def test_colon_in_string_with_text():
+    tokens = scan('span title="time: now": Hello')
+    assert tokens == [Token("line", 0, 'span title="time: now"', "Hello", True)]
+
+
+# --- brace/bracket tracking ---
+
+
+def test_colon_in_braces():
+    tokens = scan("button onclick=handle({delay: 100}):")
+    assert tokens == [
+        Token("line", 0, "button onclick=handle({delay: 100})", "", True),
+    ]
+
+
+def test_colon_in_brackets():
+    tokens = scan("div data=[{a: 1}]:")
+    assert tokens == [Token("line", 0, "div data=[{a: 1}]", "", True)]
+
+
+# --- mailto and other non-// URLs ---
+
+
+def test_mailto_url():
+    tokens = scan("a href=mailto:user@test.com: Send")
+    assert tokens == [
+        Token("line", 0, "a href=mailto:user@test.com", "Send", True),
     ]

@@ -119,24 +119,24 @@ Built-in functions like `len`, `str`, `int`, `sorted`, etc. are available in exp
 
 ## Nesting
 
-Indent children with tabs:
+Indent children with one space per level:
 
 ```sugar
 .card:
-	h2: Title
-	p: Description
-	.actions:
-		button: Save
-		button: Cancel
+ h2: Title
+ p: Description
+ .actions:
+  button: Save
+  button: Cancel
 ```
 ```html
 <div class="card">
-	<h2>Title</h2>
-	<p>Description</p>
-	<div class="actions">
-		<button>Save</button>
-		<button>Cancel</button>
-	</div>
+ <h2>Title</h2>
+ <p>Description</p>
+ <div class="actions">
+  <button>Save</button>
+  <button>Cancel</button>
+ </div>
 </div>
 ```
 
@@ -163,8 +163,8 @@ Iterate over collections to generate repeated HTML:
 
 ```sugar
 ul:
-	for user of users:
-		li: {user.name}
+ for user of users:
+  li: {user.name}
 ```
 
 ```python
@@ -173,8 +173,8 @@ sugar(template, {"users": [{"name": "Alice"}, {"name": "Bob"}]})
 
 ```html
 <ul>
-	<li>Alice</li>
-	<li>Bob</li>
+ <li>Alice</li>
+ <li>Bob</li>
 </ul>
 ```
 
@@ -184,29 +184,29 @@ Conditionally render elements:
 
 ```sugar
 div:
-	if show_message:
-		p: Hello!
+ if show_message:
+  p: Hello!
 ```
 
 ### Nested loops
 
 ```sugar
 table:
-	for group of groups:
-		tr:
-			th: {group.name}
-		for item of group.items:
-			tr:
-				td: {item.key}
-				td: {item.value}
+ for group of groups:
+  tr:
+   th: {group.name}
+  for item of group.items:
+   tr:
+    td: {item.key}
+    td: {item.value}
 ```
 
 ### Interpolation in attributes
 
 ```sugar
 div:
-	for page of pages:
-		a href=/page/{page.id}: {page.title}
+ for page of pages:
+  a href=/page/{page.id}: {page.title}
 ```
 
 ## Implicit Children
@@ -224,23 +224,23 @@ Inside certain parent elements, children inherit the expected tag automatically:
 
 ```sugar
 ul:
-	: Home
-	: About
-	.active: Contact
+ : Home
+ : About
+ .active: Contact
 
 select:
-	value=br: Brasil
-	value=us selected: USA
+ value=br: Brasil
+ value=us selected: USA
 ```
 ```html
 <ul>
-	<li>Home</li>
-	<li>About</li>
-	<li class="active">Contact</li>
+ <li>Home</li>
+ <li>About</li>
+ <li class="active">Contact</li>
 </ul>
 <select>
-	<option value="br">Brasil</option>
-	<option value="us" selected>USA</option>
+ <option value="br">Brasil</option>
+ <option value="us" selected>USA</option>
 </select>
 ```
 
@@ -265,17 +265,133 @@ meta charset=UTF-8:
 
 ## Comments
 
-Lines starting with `# ` (hash followed by space) are removed from output:
+Lines starting with `# ` (hash followed by space) are preserved as HTML comments in the output:
 
 ```sugar
 div:
-	# This won't appear in the HTML
-	p: Visible
+ # This is a comment
+ p: Visible
 ```
 ```html
 <div>
-	<p>Visible</p>
+ <!--This is a comment -->
+ <p>Visible</p>
 </div>
 ```
 
 Note: `#foo` (no space) is an ID shorthand, not a comment.
+
+## table!
+
+`table!:` creates an HTML `<table>` from pipe-separated tabular data. The first row becomes `<thead>`, the rest become `<tbody>` rows.
+
+```sugar
+table!.striped.bordered:
+ Name  | Age | Email
+ Alice | 30  | alice@co.com
+ Bob   | 25  | bob@co.com
+```
+```html
+<table class="striped bordered">
+ <thead>
+  <tr>
+   <th>Name</th>
+   <th>Age</th>
+   <th>Email</th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr>
+   <td>Alice</td>
+   <td>30</td>
+   <td>alice@co.com</td>
+  </tr>
+  <tr>
+   <td>Bob</td>
+   <td>25</td>
+   <td>bob@co.com</td>
+  </tr>
+ </tbody>
+</table>
+```
+
+Classes and attributes work on `table!` just like regular elements.
+
+## markdown!
+
+`markdown!:` converts Markdown content to HTML. It wraps the output in a `<div>`. Classes and attributes can be added to the wrapper:
+
+```sugar
+markdown!.prose:
+ # Welcome
+
+ This is **bold** and *italic* text.
+
+ ## Features
+
+ - Fast compilation
+ - Clean syntax
+ - No quotes needed
+
+ > Sugar is sweet.
+```
+```html
+<div class="prose">
+ <h1>Welcome</h1>
+ <p>This is <strong>bold</strong> and <em>italic</em> text.</p>
+ <h2>Features</h2>
+ <ul>
+  <li>Fast compilation</li>
+  <li>Clean syntax</li>
+  <li>No quotes needed</li>
+ </ul>
+ <blockquote>
+  <p>Sugar is sweet.</p>
+ </blockquote>
+</div>
+```
+
+## math!
+
+`math!:` converts LaTeX math expressions to MathML:
+
+```sugar
+p: Einstein's equation:
+math!:
+ E = mc^2
+
+p: Quadratic formula:
+math!:
+ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+```
+
+The LaTeX is compiled to `<math>` elements with MathML markup, suitable for rendering in modern browsers.
+
+## svg!
+
+`svg!:` provides simplified SVG syntax. Specify dimensions as `WIDTHxHEIGHT` after `svg!`:
+
+```sugar
+svg! 300x200:
+ circle 150 100 r=80 fill=none stroke=black stroke-width=2
+ rect 50 30 200x140 fill=none stroke=gray
+ line 50 100 250 100 stroke=red stroke-dasharray=5
+ ellipse 150 100 rx=80 ry=50 fill=rgba(0,0,255,0.1)
+ text 150 105 Center text-anchor=middle
+ path fill=none stroke=blue stroke-width=3:
+  M 10 180
+  C 80 20 220 20 290 180
+  Z
+```
+```html
+<svg viewBox="0 0 300 200" width="300" height="200">
+ <circle cx="150" cy="100" r="80" fill="none" stroke="black" stroke-width="2"/>
+ <rect x="50" y="30" width="200" height="140" fill="none" stroke="gray"/>
+ <line x1="50" y1="100" x2="250" y2="100" stroke="red" stroke-dasharray="5"/>
+ <ellipse cx="150" cy="100" rx="80" ry="50" fill="rgba(0,0,255,0.1)"/>
+ <text x="150" y="105" text-anchor="middle">Center</text>
+ <path d="M 10 180 C 80 20 220 20 290 180 Z" fill="none" stroke="blue" stroke-width="3"/>
+</svg>
+```
+
+Positional arguments are mapped to the appropriate attributes for each SVG element (e.g., `cx`/`cy` for circle, `x`/`y` for rect). The `path:` block collects indented lines into the `d` attribute.

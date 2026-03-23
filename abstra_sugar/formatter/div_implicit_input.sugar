@@ -1,0 +1,6 @@
+div.container:
+ div#main:
+  div.card.active:
+   p: Hello
+ div:
+  span: World

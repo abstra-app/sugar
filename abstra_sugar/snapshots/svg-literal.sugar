@@ -1,0 +1,12 @@
+html:
+ body:
+  svg! 300x200:
+   circle 150 100 r=80 fill=none stroke=black stroke-width=2
+   rect 50 30 200x140 fill=none stroke=gray
+   line 50 100 250 100 stroke=red stroke-dasharray=5
+   ellipse 150 100 rx=80 ry=50 fill=rgba(0,0,255,0.1)
+   text 150 105 Center text-anchor=middle
+   path fill=none stroke=blue stroke-width=3:
+    M 10 180
+    C 80 20 220 20 290 180
+    Z

@@ -1,0 +1,12 @@
+<html>
+ <body>
+  <div id="app"></div>
+  <script>
+   function render(name, items) {
+    app = document.getElementById("app");
+    app.innerHTML = `<h1>Hello ${name}</h1><ul> <li>Item count is ${items.length}</li></ul>`;
+   }
+   render("World", [1, 2, 3]);
+  </script>
+ </body>
+</html>

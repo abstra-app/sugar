@@ -1,0 +1,41 @@
+<html>
+ <body>
+  <script>
+   //if/else if/else
+   function check(x) {
+    if (x > 100) {
+     return "big";
+    }
+    else if (x > 10) {
+     return "medium";
+    }
+    else {
+     return "small";
+    }
+   }
+
+   //for of
+   for (let item of items) {
+    console.log(item);
+   }
+
+   //while
+   i = 0;
+   while (i < 5) {
+    console.log(i);
+    i++;
+   }
+
+   //try/catch/finally
+   function risky() {
+    try {
+     JSON.parse(input);
+    }
+    catch(e): [console.error(e)];
+    finally {
+     cleanup();
+    }
+   }
+  </script>
+ </body>
+</html>

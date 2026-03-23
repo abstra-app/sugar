@@ -1,0 +1,17 @@
+html:
+ body:
+  table:
+   thead:
+    tr:
+     : Name
+     : Age
+     : Email
+   tbody:
+    tr:
+     : Alice
+     : 30
+     : a href=mailto:alice@test.com: alice@test.com
+    tr:
+     : Bob
+     : 25
+     : a href=mailto:bob@test.com: bob@test.com

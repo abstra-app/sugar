@@ -1,0 +1,19 @@
+html:
+ body:
+  script:
+   class Animal:
+    constructor(name, sound):
+     this.name = name
+     this.sound = sound
+    speak():
+     return `${this.name} says ${this.sound}`
+
+   class Dog extends Animal:
+    constructor(name):
+     super(name, "woof")
+    fetch():
+     return `${this.name} fetches the ball`
+
+   dog = new Dog("Rex")
+   console.log(dog.speak())
+   console.log(dog.fetch())

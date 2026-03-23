@@ -1,17 +1,16 @@
 <html>
-	<body>
-		<div id="app"></div>
-		<script>
-			users = [{name: "Alice", email: "a@co.com"}, {name: "Bob", email: "b@co.com"}];
-
-			function render() {
-				container = document.getElementById("app");
-				container.innerHTML = "";
-				for (let user of users) {
-					container.innerHTML += `<div class="flex items-center gap-4 p-4 border-b"><div class="font-medium">${user.name}</div><div class="text-sm text-gray-400">${user.email}</div><a href="/users/${user.id}">View</a></div>`;
-				}
-			}
-			render();
-		</script>
-	</body>
+ <body>
+  <div id="app"></div>
+  <script>
+   users = [{name: "Alice", email: "a@co.com"}, {name: "Bob", email: "b@co.com"}];
+   function render() {
+    container = document.getElementById("app");
+    container.innerHTML = "";
+    for (let user of users) {
+     container.innerHTML += `<div class="flex items-center gap-4 p-4 border-b"> <div class="font-medium">${user.name}</div> <div class="text-sm text-gray-400">${user.email}</div> <a href="/users/${user.id}">View</a></div>`;
+    }
+   }
+   render();
+  </script>
+ </body>
 </html>

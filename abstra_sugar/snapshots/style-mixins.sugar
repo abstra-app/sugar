@@ -1,0 +1,19 @@
+html:
+ head:
+  style:
+   reset = ():
+    margin: 0
+    padding: 0
+   center = ():
+    display: flex
+    align-items: center
+    justify-content: center
+   body:
+    @reset()
+    font-family: sans-serif
+   .container:
+    @center()
+    min-height: 100vh
+ body:
+  .container:
+   h1: Centered Content

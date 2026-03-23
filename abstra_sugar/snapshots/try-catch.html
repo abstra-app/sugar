@@ -1,9 +1,14 @@
 <html>
-	<script>
-		async function fetchData(url) {
-			try: {res = await fetch(url), return await res.json()};
-			catch(e): {console.error(e)};
-			finally: {console.log("done")};
-		}
-	</script>
+ <script>
+  async function fetchData(url) {
+   try {
+    res = await fetch(url);
+    return await res.json();
+   }
+   catch(e): [console.error(e)];
+   finally {
+    console.log("done");
+   }
+  }
+ </script>
 </html>

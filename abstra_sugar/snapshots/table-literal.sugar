@@ -1,0 +1,9 @@
+html:
+ body:
+  script:
+   users = table!:
+    name    | age | active
+    "Alice" | 30  | true
+    "Bob"   | 25  | false
+    "Eve"   | 35  | true
+   console.log(users)
