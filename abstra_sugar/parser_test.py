@@ -1,4 +1,4 @@
-from .ast import Element, ScriptElement, StyleElement, StyleRule
+from .ast import Element, ScriptElement, StyleElement
 from .lexer import scan
 from .parser import parse, parse_inline
 

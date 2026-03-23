@@ -27,9 +27,8 @@ def test_snapshots():
         expected = html_file.read_text()
 
         warnings = check_source(source)
-        assert warnings == [], (
-            f"Warnings in {sugar_file.name}:\n"
-            + "\n".join(f"  line {w['line']}: {w['message']}" for w in warnings)
+        assert warnings == [], f"Warnings in {sugar_file.name}:\n" + "\n".join(
+            f"  line {w['line']}: {w['message']}" for w in warnings
         )
 
         result = sugar(source, data)

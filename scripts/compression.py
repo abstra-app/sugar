@@ -21,7 +21,8 @@ def count_tokens(text: str, enc: tiktoken.Encoding) -> int:
 def main():
     parser = argparse.ArgumentParser(description="Sugar compression ratio")
     parser.add_argument(
-        "--encoding", default="cl100k_base",
+        "--encoding",
+        default="cl100k_base",
         help="tiktoken encoding (default: cl100k_base)",
     )
     parser.add_argument("--verbose", "-v", action="store_true")
@@ -50,14 +51,16 @@ def main():
 
         ratio = html_tokens / sugar_tokens if sugar_tokens else 0
 
-        rows.append({
-            "name": sugar_file.stem,
-            "sugar_tok": sugar_tokens,
-            "html_tok": html_tokens,
-            "ratio": ratio,
-            "sugar_chars": sugar_chars,
-            "html_chars": html_chars,
-        })
+        rows.append(
+            {
+                "name": sugar_file.stem,
+                "sugar_tok": sugar_tokens,
+                "html_tok": html_tokens,
+                "ratio": ratio,
+                "sugar_chars": sugar_chars,
+                "html_chars": html_chars,
+            }
+        )
 
         total_sugar += sugar_tokens
         total_html += html_tokens
@@ -70,7 +73,9 @@ def main():
 
     # header
     name_w = max(len(r["name"]) for r in rows)
-    print(f"{'Snapshot':<{name_w}}  {'Sugar':>7}  {'HTML':>7}  {'Ratio':>6}  {'Saved':>6}")
+    print(
+        f"{'Snapshot':<{name_w}}  {'Sugar':>7}  {'HTML':>7}  {'Ratio':>6}  {'Saved':>6}"
+    )
     print(f"{'-' * name_w}  {'-' * 7}  {'-' * 7}  {'-' * 6}  {'-' * 6}")
 
     for r in rows:
@@ -96,7 +101,9 @@ def main():
     )
 
     if args.verbose:
-        print(f"\nCharacter counts: {total_sugar_chars:,} sugar → {total_html_chars:,} html ({char_ratio:.2f}x)")
+        print(
+            f"\nCharacter counts: {total_sugar_chars:,} sugar → {total_html_chars:,} html ({char_ratio:.2f}x)"
+        )
         print(f"Encoding: {args.encoding}")
         print(f"Snapshots: {len(rows)}")
 

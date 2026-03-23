@@ -26,8 +26,7 @@ def test_formatter_fixtures():
         expected = output_file.read_text()
         result = format_source(source)
         assert result == expected, (
-            f"Formatter mismatch: {name}\n"
-            f"GOT:\n{result}\n\nEXPECTED:\n{expected}"
+            f"Formatter mismatch: {name}\nGOT:\n{result}\n\nEXPECTED:\n{expected}"
         )
 
 
@@ -52,8 +51,7 @@ def test_formatted_snapshots():
         source = sugar_file.read_text()
         formatted = format_source(source)
         assert source == formatted, (
-            f"Snapshot not formatted: {sugar_file.name}\n"
-            f"Run format_source() on it."
+            f"Snapshot not formatted: {sugar_file.name}\nRun format_source() on it."
         )
 
 
@@ -75,7 +73,6 @@ def test_formatted_code_has_no_warnings():
     for name, _input_file, output_file in pairs:
         source = output_file.read_text()
         warnings = check_source(source)
-        assert warnings == [], (
-            f"Warnings in formatted {name}:\n"
-            + "\n".join(f"  line {w['line']}: {w['message']}" for w in warnings)
+        assert warnings == [], f"Warnings in formatted {name}:\n" + "\n".join(
+            f"  line {w['line']}: {w['message']}" for w in warnings
         )

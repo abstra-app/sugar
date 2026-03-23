@@ -3,15 +3,38 @@ from types import SimpleNamespace
 from typing import Any, List, Optional, Tuple
 
 from .ast import (
-    Comment, ComponentCall, ComponentDef, Element, ForBlock, IfBlock,
-    MarkdownLiteral, MathLiteral, Node, ScriptElement, StyleElement,
-    StyleRule, SvgLiteral, TableLiteral,
+    Comment,
+    ComponentCall,
+    ComponentDef,
+    Element,
+    ForBlock,
+    IfBlock,
+    MarkdownLiteral,
+    MathLiteral,
+    Node,
+    ScriptElement,
+    StyleElement,
+    StyleRule,
+    SvgLiteral,
+    TableLiteral,
 )
 from .parser import parse_inline
 
 VOID_ELEMENTS = {
-    "area", "base", "br", "col", "embed", "hr", "img", "input",
-    "link", "meta", "param", "source", "track", "wbr",
+    "area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr",
 }
 
 
@@ -31,13 +54,33 @@ def _wrap_data(data: dict) -> dict:
 
 
 _SAFE_BUILTINS = {
-    "len": len, "str": str, "int": int, "float": float, "bool": bool,
-    "list": list, "dict": dict, "tuple": tuple, "set": set,
-    "range": range, "enumerate": enumerate, "zip": zip, "map": map,
-    "filter": filter, "sorted": sorted, "reversed": reversed,
-    "min": min, "max": max, "sum": sum, "abs": abs, "round": round,
-    "isinstance": isinstance, "hasattr": hasattr, "getattr": getattr,
-    "True": True, "False": False, "None": None,
+    "len": len,
+    "str": str,
+    "int": int,
+    "float": float,
+    "bool": bool,
+    "list": list,
+    "dict": dict,
+    "tuple": tuple,
+    "set": set,
+    "range": range,
+    "enumerate": enumerate,
+    "zip": zip,
+    "map": map,
+    "filter": filter,
+    "sorted": sorted,
+    "reversed": reversed,
+    "min": min,
+    "max": max,
+    "sum": sum,
+    "abs": abs,
+    "round": round,
+    "isinstance": isinstance,
+    "hasattr": hasattr,
+    "getattr": getattr,
+    "True": True,
+    "False": False,
+    "None": None,
 }
 
 
@@ -48,6 +91,7 @@ def _eval_expr(expr: str, data: dict) -> Any:
 def _interpolate(text: str, data: dict) -> str:
     def replace(m: re.Match) -> str:
         return str(_eval_expr(m.group(1), data))
+
     return re.sub(r"\{([^}]+)\}", replace, text)
 
 
@@ -75,8 +119,12 @@ def _collect_components(nodes: list, components: dict) -> None:
 
 
 def _compile_node(
-    node: Node, depth: int, lines: List[str], data: Optional[dict],
-    components: Optional[dict] = None, slot: Optional[list] = None,
+    node: Node,
+    depth: int,
+    lines: List[str],
+    data: Optional[dict],
+    components: Optional[dict] = None,
+    slot: Optional[list] = None,
 ) -> None:
     comps = components or {}
     if isinstance(node, Comment):
@@ -111,7 +159,9 @@ def _compile_node(
 
 
 def _compile_table_html(
-    table: TableLiteral, depth: int, lines: List[str],
+    table: TableLiteral,
+    depth: int,
+    lines: List[str],
     data: Optional[dict] = None,
 ) -> None:
     indent = " " * depth
@@ -141,21 +191,24 @@ def _compile_table_html(
 
 
 def _compile_math_html(
-    node: MathLiteral, depth: int, lines: List[str],
+    node: MathLiteral,
+    depth: int,
+    lines: List[str],
 ) -> None:
     import latex2mathml.converter as _l2m
+
     indent = " " * depth
     mathml = _l2m.convert(node.source)
     lines.append(f"{indent}{mathml}")
 
 
-_SVG_SHAPE_RE = re.compile(
-    r"^(circle|rect|ellipse|line|polyline|polygon|path|text)\s+"
-)
+_SVG_SHAPE_RE = re.compile(r"^(circle|rect|ellipse|line|polyline|polygon|path|text)\s+")
 
 
 def _compile_svg_html(
-    node: SvgLiteral, depth: int, lines: List[str],
+    node: SvgLiteral,
+    depth: int,
+    lines: List[str],
     data: Optional[dict] = None,
 ) -> None:
     indent = " " * depth
@@ -195,13 +248,13 @@ def _compile_svg_html(
                 if "=" in p:
                     k, v = p.split("=", 1)
                     attrs.append(f'{k}="{v}"')
-            lines.append(f'{d1}<path {" ".join(attrs)}/>')
+            lines.append(f"{d1}<path {' '.join(attrs)}/>")
             continue
 
         m = _SVG_SHAPE_RE.match(line)
         if m:
             tag = m.group(1)
-            rest = line[m.end():]
+            rest = line[m.end() :]
             lines.append(f"{d1}{_svg_shape(tag, rest)}")
         else:
             lines.append(f"{d1}{line}")
@@ -275,10 +328,13 @@ def _svg_shape(tag: str, rest: str) -> str:
 
 
 def _compile_markdown_html(
-    node: MarkdownLiteral, depth: int, lines: List[str],
+    node: MarkdownLiteral,
+    depth: int,
+    lines: List[str],
     data: Optional[dict] = None,
 ) -> None:
     import markdown as _md
+
     indent = " " * depth
     html = _md.markdown(node.source)
     if data is not None:
@@ -295,8 +351,12 @@ def _compile_markdown_html(
 
 
 def _compile_element(
-    el: Element, depth: int, lines: List[str], data: Optional[dict],
-    components: Optional[dict] = None, slot: Optional[list] = None,
+    el: Element,
+    depth: int,
+    lines: List[str],
+    data: Optional[dict],
+    components: Optional[dict] = None,
+    slot: Optional[list] = None,
 ) -> None:
     # slot replacement
     if el.tag == "slot" and slot:
@@ -354,8 +414,12 @@ def _compile_element_inline(el: Element, data: Optional[dict]) -> str:
 
 
 def _compile_for_block(
-    block: ForBlock, depth: int, lines: List[str], data: Optional[dict],
-    components: Optional[dict] = None, slot: Optional[list] = None,
+    block: ForBlock,
+    depth: int,
+    lines: List[str],
+    data: Optional[dict],
+    components: Optional[dict] = None,
+    slot: Optional[list] = None,
 ) -> None:
     if data is None:
         return
@@ -367,8 +431,12 @@ def _compile_for_block(
 
 
 def _compile_if_block(
-    block: IfBlock, depth: int, lines: List[str], data: Optional[dict],
-    components: Optional[dict] = None, slot: Optional[list] = None,
+    block: IfBlock,
+    depth: int,
+    lines: List[str],
+    data: Optional[dict],
+    components: Optional[dict] = None,
+    slot: Optional[list] = None,
 ) -> None:
     if data is None:
         return
@@ -381,15 +449,22 @@ def _compile_if_block(
 
 
 def _compile_component_call(
-    call: ComponentCall, depth: int, lines: List[str],
-    data: Optional[dict], components: dict,
+    call: ComponentCall,
+    depth: int,
+    lines: List[str],
+    data: Optional[dict],
+    components: dict,
 ) -> None:
     comp = components.get(call.name)
     if comp is None:
         return
 
     # bind args to params
-    args = [a.strip() for a in call.args_raw.split(",") if a.strip()] if call.args_raw else []
+    args = (
+        [a.strip() for a in call.args_raw.split(",") if a.strip()]
+        if call.args_raw
+        else []
+    )
     call_data = dict(data) if data else {}
     for param, arg in zip(comp.params, args):
         try:
@@ -492,9 +567,7 @@ def _compile_style_rules(
 # --- Script ---
 
 
-def _compile_script(
-    node: ScriptElement, depth: int, lines: List[str]
-) -> None:
+def _compile_script(node: ScriptElement, depth: int, lines: List[str]) -> None:
     indent = " " * depth
     opening = _build_opening_tag("script", node.classes, node.attributes)
     lines.append(f"{indent}{opening}")
@@ -575,9 +648,7 @@ def _parse_script_lines(body: str) -> List[Tuple[int, str, bool]]:
     return parsed
 
 
-def _compile_script_body(
-    body: str, base_depth: int, out: List[str]
-) -> None:
+def _compile_script_body(body: str, base_depth: int, out: List[str]) -> None:
     parsed = _parse_script_lines(body)
     block_stack: List[Tuple[int, bool]] = []  # (indent, is_class)
     i = 0
@@ -604,9 +675,7 @@ def _compile_script_body(
         in_class = bool(block_stack) and block_stack[-1][1]
 
         # html!/css!/js!/text!/table! template literals
-        tmpl_match = re.match(
-            r"(.+?)(html!|css!|js!|text!|table!)\s*:$", content
-        )
+        tmpl_match = re.match(r"(.+?)(html!|css!|js!|text!|table!)\s*:$", content)
         if tmpl_match:
             tmpl_prefix = tmpl_match.group(1)
             tmpl_type = tmpl_match.group(2)
@@ -618,9 +687,7 @@ def _compile_script_body(
                     break
                 tmpl_lines.append(parsed[j])
                 j += 1
-            tmpl_html = _compile_template_block(
-                tmpl_lines, indent + 1, tmpl_type
-            )
+            tmpl_html = _compile_template_block(tmpl_lines, indent + 1, tmpl_type)
             if tmpl_type == "table!":
                 stmt = f"{tmpl_prefix}{tmpl_html}"
             else:
@@ -645,9 +712,12 @@ def _compile_script_body(
 
             _BLOCK_KEYWORDS = {"else", "try", "finally"}
             _is_method = in_class and re.match(r"\w+\s*\(", header)
-            if js_header == header and not is_class \
-                    and header not in _BLOCK_KEYWORDS \
-                    and not _is_method:
+            if (
+                js_header == header
+                and not is_class
+                and header not in _BLOCK_KEYWORDS
+                and not _is_method
+            ):
                 obj_str, i = _compile_collection_inline(parsed, i + 1, indent)
                 eq_match = re.match(r"(.+?)\s*=\s*(.*)", header)
                 if eq_match:
@@ -745,12 +815,9 @@ def _compile_list_comprehension(stmt: str) -> str:
     def _replace(m: re.Match) -> str:
         expr, var, iterable, condition = m.groups()
         if condition:
-            return (
-                f"{iterable}"
-                f".filter(({var}) => {condition})"
-                f".map(({var}) => {expr})"
-            )
+            return f"{iterable}.filter(({var}) => {condition}).map(({var}) => {expr})"
         return f"{iterable}.map(({var}) => {expr})"
+
     return _COMPREHENSION_RE.sub(_replace, stmt)
 
 

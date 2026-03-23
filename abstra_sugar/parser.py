@@ -1,27 +1,129 @@
+import re
 from typing import Dict, List, Optional, Tuple, Union
 
-import re
-
 from .ast import (
-    ComponentCall, ComponentDef, Element, ForBlock, IfBlock, Node,
-    ScriptElement, StyleElement, StyleRule,
+    ComponentCall,
+    ComponentDef,
+    Element,
+    ForBlock,
+    IfBlock,
+    Node,
+    ScriptElement,
+    StyleElement,
+    StyleRule,
 )
 from .tokens import Token
 
 HTML_TAGS = {
-    "a", "abbr", "address", "article", "aside", "audio", "b", "bdi", "bdo",
-    "blockquote", "body", "br", "button", "canvas", "caption", "cite", "code",
-    "col", "colgroup", "data", "datalist", "dd", "del", "details", "dfn",
-    "dialog", "div", "dl", "dt", "em", "embed", "fieldset", "figcaption",
-    "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head",
-    "header", "hgroup", "hr", "html", "i", "iframe", "img", "input", "ins",
-    "kbd", "label", "legend", "li", "link", "main", "map", "mark", "menu",
-    "meta", "meter", "nav", "noscript", "object", "ol", "optgroup", "option",
-    "output", "p", "picture", "pre", "progress", "q", "rp", "rt", "ruby",
-    "s", "samp", "script", "section", "select", "slot", "small", "source",
-    "span", "strong", "style", "sub", "summary", "sup", "table", "tbody",
-    "td", "template", "textarea", "tfoot", "th", "thead", "time", "title",
-    "tr", "track", "u", "ul", "var", "video", "wbr",
+    "a",
+    "abbr",
+    "address",
+    "article",
+    "aside",
+    "audio",
+    "b",
+    "bdi",
+    "bdo",
+    "blockquote",
+    "body",
+    "br",
+    "button",
+    "canvas",
+    "caption",
+    "cite",
+    "code",
+    "col",
+    "colgroup",
+    "data",
+    "datalist",
+    "dd",
+    "del",
+    "details",
+    "dfn",
+    "dialog",
+    "div",
+    "dl",
+    "dt",
+    "em",
+    "embed",
+    "fieldset",
+    "figcaption",
+    "figure",
+    "footer",
+    "form",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "head",
+    "header",
+    "hgroup",
+    "hr",
+    "html",
+    "i",
+    "iframe",
+    "img",
+    "input",
+    "ins",
+    "kbd",
+    "label",
+    "legend",
+    "li",
+    "link",
+    "main",
+    "map",
+    "mark",
+    "menu",
+    "meta",
+    "meter",
+    "nav",
+    "noscript",
+    "object",
+    "ol",
+    "optgroup",
+    "option",
+    "output",
+    "p",
+    "picture",
+    "pre",
+    "progress",
+    "q",
+    "rp",
+    "rt",
+    "ruby",
+    "s",
+    "samp",
+    "script",
+    "section",
+    "select",
+    "slot",
+    "small",
+    "source",
+    "span",
+    "strong",
+    "style",
+    "sub",
+    "summary",
+    "sup",
+    "table",
+    "tbody",
+    "td",
+    "template",
+    "textarea",
+    "tfoot",
+    "th",
+    "thead",
+    "time",
+    "title",
+    "tr",
+    "track",
+    "u",
+    "ul",
+    "var",
+    "video",
+    "wbr",
 }
 
 
@@ -85,9 +187,7 @@ def _split_script_segments(tokens: List[Token]) -> List[Token]:
                 body_lines.pop()
             body = "\n".join(body_lines)
             body_type = tag.replace("!", "_body")  # "markdown_body" etc.
-            result.append(
-                Token(body_type, block_indent + 1, body, "", False)
-            )
+            result.append(Token(body_type, block_indent + 1, body, "", False))
             continue
 
         if tag != "script":
@@ -189,6 +289,7 @@ def _parse_node(item: dict, parent_tag: str = "") -> Node:
     # comment node
     if token.type == "comment":
         from .ast import Comment
+
         text = token.head[2:] if token.head.startswith("# ") else token.head[1:]
         return Comment(text=text)
 
@@ -213,7 +314,9 @@ def _parse_node(item: dict, parent_tag: str = "") -> Node:
     if m:
         var, keyword, iterable = m.groups()
         child_nodes = [_parse_node(c, parent_tag) for c in children]
-        return ForBlock(var=var, keyword=keyword, iterable=iterable, children=child_nodes)
+        return ForBlock(
+            var=var, keyword=keyword, iterable=iterable, children=child_nodes
+        )
 
     if token.head.startswith("if "):
         condition = token.head[3:].strip()
@@ -237,6 +340,7 @@ def _parse_node(item: dict, parent_tag: str = "") -> Node:
     # math!: literal in HTML context
     if token.head == "math!":
         from .ast import MathLiteral
+
         source = ""
         for child in children:
             if child["token"].type == "math_body":
@@ -245,10 +349,14 @@ def _parse_node(item: dict, parent_tag: str = "") -> Node:
         return MathLiteral(source=source)
 
     # svg!: literal in HTML context
-    if token.head == "svg!" or token.head.startswith("svg!.") \
-            or token.head.startswith("svg!#") \
-            or (token.head.startswith("svg! ") and "x" in token.head):
+    if (
+        token.head == "svg!"
+        or token.head.startswith("svg!.")
+        or token.head.startswith("svg!#")
+        or (token.head.startswith("svg! ") and "x" in token.head)
+    ):
         from .ast import SvgLiteral
+
         # parse "svg! WxH" or "svg!.class WxH"
         head_parts = token.head.split()
         tag_part = head_parts[0]  # "svg!" or "svg!.class"
@@ -277,17 +385,26 @@ def _parse_node(item: dict, parent_tag: str = "") -> Node:
         return SvgLiteral(classes=classes, attributes=attrs, source=source)
 
     # table!: literal in HTML context
-    if token.head == "table!" or token.head.startswith("table!.") \
-            or token.head.startswith("table!#"):
+    if (
+        token.head == "table!"
+        or token.head.startswith("table!.")
+        or token.head.startswith("table!#")
+    ):
         from .ast import TableLiteral
+
         rest = token.head[6:]  # after "table!"
         _, classes, attrs = _parse_element_def("table" + rest)
         headers: list = []
         rows: list = []
         for child in children:
             ct = child["token"]
-            line = ct.head + (": " + ct.text if ct.has_colon and ct.text else
-                              ":" if ct.has_colon else "")
+            line = ct.head + (
+                ": " + ct.text
+                if ct.has_colon and ct.text
+                else ":"
+                if ct.has_colon
+                else ""
+            )
             cells = [c.strip() for c in line.split("|")]
             if not headers:
                 headers = cells
@@ -298,9 +415,13 @@ def _parse_node(item: dict, parent_tag: str = "") -> Node:
         )
 
     # markdown!: literal in HTML context
-    if token.head == "markdown!" or token.head.startswith("markdown!.") \
-            or token.head.startswith("markdown!#"):
+    if (
+        token.head == "markdown!"
+        or token.head.startswith("markdown!.")
+        or token.head.startswith("markdown!#")
+    ):
         from .ast import MarkdownLiteral
+
         rest = token.head[9:]  # after "markdown!"
         _, classes, attrs = _parse_element_def("div" + rest)
         # body comes from the markdown_body token (preserves # headings)
@@ -309,9 +430,7 @@ def _parse_node(item: dict, parent_tag: str = "") -> Node:
             if child["token"].type == "markdown_body":
                 source = child["token"].head
                 break
-        return MarkdownLiteral(
-            classes=classes, attributes=attrs, source=source
-        )
+        return MarkdownLiteral(classes=classes, attributes=attrs, source=source)
 
     tag, classes, attrs = _parse_element_def(head)
 
@@ -435,9 +554,7 @@ def _parse_style_item(item: dict) -> StyleRule:
                     props.append((ct.head, ct.text))
                 else:
                     props.append((ct.head, ""))
-        return StyleRule(
-            selector=selector, properties=props, children=child_rules
-        )
+        return StyleRule(selector=selector, properties=props, children=child_rules)
     else:
         if token.has_colon and not token.text:
             return StyleRule(selector=token.head, properties=[], children=[])

@@ -50,9 +50,7 @@ def _find_matching(content: str, start: int, open_ch: str, close_ch: str) -> int
     return -1
 
 
-def _check_script_line(
-    results: List[Diagnostic], line: int, content: str
-) -> None:
+def _check_script_line(results: List[Diagnostic], line: int, content: str) -> None:
     # scan for inline objects/arrays — only in assignment context
     # e.g. "x = {a: 1}" or "x = [1, 2]", not "x || {a: 1}" or "for i of [1,2]"
     assign_match = re.match(r"[\w.]+\s*=\s*", content)
@@ -65,8 +63,9 @@ def _check_script_line(
                 inner = content[rhs_start + 1 : j]
                 if inner.strip() and ":" in inner:
                     _emit(
-                        results, line,
-                        f"inline object — use indented notation instead",
+                        results,
+                        line,
+                        "inline object — use indented notation instead",
                     )
         elif rhs.startswith("["):
             j = _find_matching(content, rhs_start, "[", "]")
@@ -74,8 +73,9 @@ def _check_script_line(
                 inner = content[rhs_start + 1 : j]
                 if inner.strip() and "," in inner:
                     _emit(
-                        results, line,
-                        f"inline list — use indented notation instead",
+                        results,
+                        line,
+                        "inline list — use indented notation instead",
                     )
 
     # 5. trailing semicolons
@@ -84,18 +84,21 @@ def _check_script_line(
     # 6. arrow functions
     if _ARROW_RE.search(content):
         _emit(
-            results, line,
+            results,
+            line,
             "'() =>' is verbose — use '():' instead",
         )
     # 7. function keyword
     if _FUNCTION_RE.search(content):
         _emit(
-            results, line,
+            results,
+            line,
             "'function name()' is verbose — use 'name():' instead",
         )
     elif _ANON_FUNCTION_RE.search(content):
         _emit(
-            results, line,
+            results,
+            line,
             "'function()' is verbose — use '():' instead",
         )
 
@@ -122,8 +125,7 @@ def _check_tokens(tokens: List[Token]) -> List[Diagnostic]:
                 in_script = False
             else:
                 line_content = (
-                    f"{token.head}: {token.text}" if token.has_colon
-                    else token.head
+                    f"{token.head}: {token.text}" if token.has_colon else token.head
                 )
                 _check_script_line(warnings, line_num, line_content)
                 continue
@@ -149,7 +151,8 @@ def _check_tokens(tokens: List[Token]) -> List[Diagnostic]:
         if raw_tag == "div" and len(tag_part) > 3:
             short = tag_part[3:]
             _emit(
-                warnings, line_num,
+                warnings,
+                line_num,
                 f"'{tag_part}' can be shortened to '{short}' (div is implicit)",
             )
 
@@ -157,7 +160,7 @@ def _check_tokens(tokens: List[Token]) -> List[Diagnostic]:
         if parent_tag in IMPLICIT_CHILDREN:
             expected = IMPLICIT_CHILDREN[parent_tag]
             if raw_tag == expected:
-                rest = tag_part[len(expected):]
+                rest = tag_part[len(expected) :]
                 if rest:
                     suggestion = rest
                 elif token.text:
@@ -165,7 +168,8 @@ def _check_tokens(tokens: List[Token]) -> List[Diagnostic]:
                 else:
                     suggestion = ":"
                 _emit(
-                    warnings, line_num,
+                    warnings,
+                    line_num,
                     f"'{raw_tag}' is implicit inside '{parent_tag}'"
                     f" — use '{suggestion}' instead",
                 )

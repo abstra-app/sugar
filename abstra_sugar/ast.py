@@ -95,4 +95,17 @@ class Comment:
     text: str = ""
 
 
-Node = Union[Element, StyleElement, ScriptElement, ForBlock, IfBlock, ComponentDef, ComponentCall, TableLiteral, MarkdownLiteral, MathLiteral, SvgLiteral, Comment]
+Node = Union[
+    Element,
+    StyleElement,
+    ScriptElement,
+    ForBlock,
+    IfBlock,
+    ComponentDef,
+    ComponentCall,
+    TableLiteral,
+    MarkdownLiteral,
+    MathLiteral,
+    SvgLiteral,
+    Comment,
+]

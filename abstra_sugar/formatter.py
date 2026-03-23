@@ -37,15 +37,11 @@ def format_source(source: str) -> str:
             else:
                 # table!: inside script — align columns
                 if _is_table_line(token):
-                    formatted, consumed = _format_table_block(
-                        lines, tokens, idx
-                    )
+                    formatted, consumed = _format_table_block(lines, tokens, idx)
                     out.extend(formatted)
                     skip_until = idx + consumed
                     continue
-                formatted, consumed = _format_script_line(
-                    token, lines, tokens, idx
-                )
+                formatted, consumed = _format_script_line(token, lines, tokens, idx)
                 out.extend(formatted)
                 skip_until = idx + consumed
                 continue
@@ -81,14 +77,18 @@ def format_source(source: str) -> str:
             rest_parts = parts[1:] if len(parts) > 1 else []
             new_head = " ".join([short] + rest_parts)
             if token.has_colon:
-                out.append(f"{prefix}{new_head}: {token.text}" if token.text
-                           else f"{prefix}{new_head}:")
+                out.append(
+                    f"{prefix}{new_head}: {token.text}"
+                    if token.text
+                    else f"{prefix}{new_head}:"
+                )
             else:
                 out.append(f"{prefix}{new_head}")
         # 2. implicit child tag
-        elif parent_tag in IMPLICIT_CHILDREN \
-                and raw_tag == IMPLICIT_CHILDREN[parent_tag]:
-            rest = tag_part[len(raw_tag):]
+        elif (
+            parent_tag in IMPLICIT_CHILDREN and raw_tag == IMPLICIT_CHILDREN[parent_tag]
+        ):
+            rest = tag_part[len(raw_tag) :]
             rest_parts = parts[1:] if len(parts) > 1 else []
             if rest:
                 new_head = " ".join([rest] + rest_parts)
@@ -98,15 +98,17 @@ def format_source(source: str) -> str:
                 new_head = ""
             if token.has_colon:
                 if new_head:
-                    out.append(f"{prefix}{new_head}: {token.text}"
-                               if token.text
-                               else f"{prefix}{new_head}:")
+                    out.append(
+                        f"{prefix}{new_head}: {token.text}"
+                        if token.text
+                        else f"{prefix}{new_head}:"
+                    )
                 else:
-                    out.append(f"{prefix}: {token.text}" if token.text
-                               else f"{prefix}:")
+                    out.append(
+                        f"{prefix}: {token.text}" if token.text else f"{prefix}:"
+                    )
             else:
-                out.append(f"{prefix}{new_head}" if new_head
-                           else f"{prefix}{raw_tag}")
+                out.append(f"{prefix}{new_head}" if new_head else f"{prefix}{raw_tag}")
         else:
             out.append(raw)
 
@@ -136,9 +138,7 @@ def _is_table_line(token: Token) -> bool:
     return "= table!" in head
 
 
-def _format_table_block(
-    lines: List[str], tokens: List[Token], start: int
-) -> tuple:
+def _format_table_block(lines: List[str], tokens: List[Token], start: int) -> tuple:
     """Format a table!: block with aligned | columns.
 
     Returns (output_lines, total_lines_consumed).
