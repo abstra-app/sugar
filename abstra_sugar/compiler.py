@@ -586,15 +586,18 @@ def _compile_template_block(
         src_lines.append(" " * (ind - base_indent) + content)
     src = "\n".join(src_lines)
 
-    if tmpl_type == "html!":
+    if tmpl_type in ("html!", "htm!"):
         from .lexer import scan
         from .parser import parse as parse_nodes
 
         nodes = parse_nodes(scan(src))
         html = compile(nodes, data=None)
         html = html.rstrip("\n")
-        # {expr} → ${expr} for template literal
-        html = re.sub(r"\{([^}]+)\}", r"${\1}", html)
+        # {expr} → ${expr} for template literal (skip already-prefixed ${…})
+        html = re.sub(r"(?<!\$)\{([^}]+)\}", r"${\1}", html)
+        if tmpl_type == "htm!":
+            # unquote "${…}" in attributes so HTM receives JS values
+            html = re.sub(r'="(\$\{[^}]+\})"', r"=\1", html)
         # collapse to single line
         html = re.sub(r"\n\t*", "", html)
         return html
@@ -674,22 +677,42 @@ def _compile_script_body(body: str, base_depth: int, out: List[str]) -> None:
         prefix = " " * (base_depth + indent)
         in_class = bool(block_stack) and block_stack[-1][1]
 
-        # html!/css!/js!/text!/table! template literals
-        tmpl_match = re.match(r"(.+?)(html!|css!|js!|text!|table!)\s*:$", content)
-        if tmpl_match:
-            tmpl_prefix = tmpl_match.group(1)
-            tmpl_type = tmpl_match.group(2)
-            tmpl_lines: List[Tuple[int, str, bool]] = []
-            j = i + 1
-            while j < len(parsed):
-                ci, cc, cb = parsed[j]
-                if not cb and ci <= indent:
-                    break
-                tmpl_lines.append(parsed[j])
-                j += 1
-            tmpl_html = _compile_template_block(tmpl_lines, indent + 1, tmpl_type)
+        # html!/htm!/css!/js!/text!/table! template literals
+        tmpl_match = re.match(
+            r"(.*?)(html!|htm!|css!|js!|text!|table!)\s*:\s*(.+)$", content
+        )
+        tmpl_block_match = (
+            re.match(r"(.*?)(html!|htm!|css!|js!|text!|table!)\s*:$", content)
+            if not tmpl_match
+            else None
+        )
+        if tmpl_match or tmpl_block_match:
+            m = tmpl_match or tmpl_block_match
+            assert m is not None
+            tmpl_prefix = m.group(1)
+            tmpl_type = m.group(2)
+            if tmpl_match:
+                # inline form: htm!: {App}
+                inline_content = tmpl_match.group(3)
+                tmpl_html = re.sub(r"(?<!\$)\{([^}]+)\}", r"${\1}", inline_content)
+                j = i + 1
+            else:
+                # block form: htm!:\n  children
+                tmpl_lines: List[Tuple[int, str, bool]] = []
+                j = i + 1
+                while j < len(parsed):
+                    ci, cc, cb = parsed[j]
+                    if not cb and ci <= indent:
+                        break
+                    tmpl_lines.append(parsed[j])
+                    j += 1
+                tmpl_html = _compile_template_block(
+                    tmpl_lines, indent + 1, tmpl_type
+                )
             if tmpl_type == "table!":
                 stmt = f"{tmpl_prefix}{tmpl_html}"
+            elif tmpl_type == "htm!":
+                stmt = f"{tmpl_prefix}html`{tmpl_html}`"
             else:
                 stmt = f"{tmpl_prefix}`{tmpl_html}`"
             if _needs_semicolon(stmt):

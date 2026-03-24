@@ -1,0 +1,7 @@
+html:
+ head:
+  script src=https://unpkg.com/petite-vue defer init:
+ body:
+  div v-scope={count:0}:
+   p: {{ count }}
+   button @click=count++: +1
