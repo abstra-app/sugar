@@ -3,6 +3,7 @@
 # Testing
 pytest>=7.4.0
 pytest-cov>=4.1.0
+pytest-lsp>=0.4.0
 
 # Linting and formatting
 ruff>=0.1.0

@@ -35,4 +35,9 @@ setup(
     url="https://github.com/abstra-app/sugar",
     packages=find_packages(exclude=["tests"]),
     install_requires=REQUIREMENTS,
+    entry_points={
+        "console_scripts": [
+            "abstra-sugar=abstra_sugar.cli:main",
+        ],
+    },
 )

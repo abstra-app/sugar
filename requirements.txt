@@ -1,3 +1,4 @@
 # Production dependencies for abstra-sugar
 latex2mathml>=3.0.0
 markdown>=3.4.0
+pygls>=2.0.0
