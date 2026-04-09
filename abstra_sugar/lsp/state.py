@@ -28,6 +28,8 @@ class DocumentState:
             self.tokens = scan(self.source)
             self.ast = parse(self.tokens)
             self.components = self._collect_components(self.ast)
+            from .diagnostics import compute_diagnostics
+            self.diagnostics = compute_diagnostics(self.source)
         except Exception as e:
             self.ast = []
             self.components = {}
