@@ -5,6 +5,14 @@ from pathlib import Path
 _EDITORS_DIR = Path(__file__).parent.parent.parent / "editors" / "vim"
 
 
+def _install_file(src: Path, dst: Path) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists() or dst.is_symlink():
+        dst.unlink()
+    shutil.copy2(src, dst)
+    print(f"  Installed {dst}")
+
+
 def setup_neovim() -> None:
     nvim_dir = Path.home() / ".config" / "nvim"
     if not nvim_dir.exists():
@@ -12,23 +20,9 @@ def setup_neovim() -> None:
         print("Is Neovim installed?")
         sys.exit(1)
 
-    # Copy ftdetect
-    ftdetect_dst = nvim_dir / "ftdetect" / "sugar.vim"
-    ftdetect_dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(_EDITORS_DIR / "ftdetect" / "sugar.vim", ftdetect_dst)
-    print(f"  Installed {ftdetect_dst}")
-
-    # Copy syntax
-    syntax_dst = nvim_dir / "syntax" / "sugar.vim"
-    syntax_dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(_EDITORS_DIR / "syntax" / "sugar.vim", syntax_dst)
-    print(f"  Installed {syntax_dst}")
-
-    # Copy LSP config
-    lsp_dst = nvim_dir / "after" / "plugin" / "sugar-lsp.lua"
-    lsp_dst.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(_EDITORS_DIR / "lsp.lua", lsp_dst)
-    print(f"  Installed {lsp_dst}")
+    _install_file(_EDITORS_DIR / "ftdetect" / "sugar.vim", nvim_dir / "ftdetect" / "sugar.vim")
+    _install_file(_EDITORS_DIR / "syntax" / "sugar.vim", nvim_dir / "syntax" / "sugar.vim")
+    _install_file(_EDITORS_DIR / "lsp.lua", nvim_dir / "after" / "plugin" / "sugar-lsp.lua")
 
     print()
     print("Sugar LSP configured for Neovim.")
