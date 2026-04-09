@@ -5,6 +5,41 @@ from pathlib import Path
 
 _VSCODE_EXT_DIR = Path(__file__).parent / "vscode_extension"
 
+_EXTENSION_JS = """\
+const {{ LanguageClient, TransportKind }} = require("vscode-languageclient/node");
+
+let client;
+
+function activate(context) {{
+  const serverOptions = {{
+    command: "{python_path}",
+    args: ["-m", "abstra_sugar.lsp"],
+    transport: TransportKind.stdio,
+  }};
+
+  const clientOptions = {{
+    documentSelector: [{{ scheme: "file", language: "sugar" }}],
+  }};
+
+  client = new LanguageClient(
+    "sugar-lsp",
+    "Sugar Language Server",
+    serverOptions,
+    clientOptions
+  );
+
+  client.start();
+}}
+
+function deactivate() {{
+  if (client) {{
+    return client.stop();
+  }}
+}}
+
+module.exports = {{ activate, deactivate }};
+"""
+
 
 def setup_vscode() -> None:
     extensions_dir = _find_extensions_dir()
@@ -18,7 +53,14 @@ def setup_vscode() -> None:
         shutil.rmtree(dst)
 
     shutil.copytree(_VSCODE_EXT_DIR, dst)
+
+    # Write extension.js with resolved Python path
+    python_path = sys.executable
+    (dst / "extension.js").write_text(
+        _EXTENSION_JS.format(python_path=python_path)
+    )
     print(f"  Installed extension to {dst}")
+    print(f"  Server command: {python_path} -m abstra_sugar.lsp")
 
     # Install npm dependencies
     print("  Installing dependencies...")
