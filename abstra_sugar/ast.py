@@ -61,6 +61,7 @@ class ScriptElement:
     classes: List[str] = field(default_factory=list)
     attributes: Dict[str, Union[str, bool]] = field(default_factory=dict)
     body: str = ""
+    body_nodes: List["ScriptNode"] = field(default_factory=list)
 
 
 @dataclass
@@ -93,6 +94,109 @@ class SvgLiteral:
 @dataclass
 class Comment:
     text: str = ""
+
+
+@dataclass
+class ScriptFunction:
+    name: str
+    params: List[str]
+    is_async: bool
+    body: List["ScriptNode"]
+
+
+@dataclass
+class ScriptClass:
+    name: str
+    extends: Optional[str]
+    methods: List["ScriptNode"]
+
+
+@dataclass
+class ScriptForLoop:
+    var: str
+    keyword: str  # "of" or "in"
+    iterable: str
+    body: List["ScriptNode"]
+
+
+@dataclass
+class ScriptWhileLoop:
+    condition: str
+    body: List["ScriptNode"]
+
+
+@dataclass
+class ScriptIf:
+    condition: str
+    body: List["ScriptNode"]
+
+
+@dataclass
+class ScriptElseIf:
+    condition: str
+    body: List["ScriptNode"]
+
+
+@dataclass
+class ScriptElse:
+    body: List["ScriptNode"]
+
+
+@dataclass
+class ScriptTry:
+    body: List["ScriptNode"]
+
+
+@dataclass
+class ScriptCatch:
+    param: Optional[str]
+    body: List["ScriptNode"]
+
+
+@dataclass
+class ScriptFinally:
+    body: List["ScriptNode"]
+
+
+@dataclass
+class ScriptCollection:
+    lhs: str
+    value: str  # compiled inline "{...}" or "[...]"
+
+
+@dataclass
+class ScriptTemplateLiteral:
+    prefix: str  # code before the html!/text!/etc
+    literal_type: str  # "html!", "htm!", "text!", "table!"
+    content: str  # compiled template content
+
+
+@dataclass
+class ScriptStatement:
+    text: str
+
+
+@dataclass
+class ScriptComment:
+    text: str
+
+
+ScriptNode = Union[
+    ScriptFunction,
+    ScriptClass,
+    ScriptForLoop,
+    ScriptWhileLoop,
+    ScriptIf,
+    ScriptElseIf,
+    ScriptElse,
+    ScriptTry,
+    ScriptCatch,
+    ScriptFinally,
+    ScriptCollection,
+    ScriptTemplateLiteral,
+    ScriptStatement,
+    ScriptComment,
+]
 
 
 Node = Union[
