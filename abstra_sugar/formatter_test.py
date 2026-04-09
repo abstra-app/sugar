@@ -1,8 +1,9 @@
 import pathlib
+import warnings
 
 from .check import check_source
 from .formatter import format_source
-from .sugar import sugar
+from .sugar import SugarWarning, sugar
 
 FORMATTER_DIR = pathlib.Path(__file__).parent / "formatter"
 
@@ -37,8 +38,10 @@ def test_formatted_output_compiles_same():
     for name, input_file, _output_file in pairs:
         source = input_file.read_text()
         formatted = format_source(source)
-        html_before = sugar(source)
-        html_after = sugar(formatted)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", SugarWarning)
+            html_before = sugar(source)
+            html_after = sugar(formatted)
         assert html_before == html_after, (
             f"Compilation changed after formatting: {name}"
         )
