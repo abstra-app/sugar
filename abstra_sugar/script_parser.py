@@ -1,7 +1,7 @@
 """Parser that converts raw Sugar-JS script body strings into ScriptNode ASTs."""
 
 import re
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from .ast import (
     ScriptCatch,
@@ -53,7 +53,7 @@ def _collect_children(
     children: List[Tuple[int, str, bool]] = []
     i = start
     while i < len(parsed):
-        indent, content, is_blank = parsed[i]
+        indent, _, is_blank = parsed[i]
         if is_blank:
             children.append(parsed[i])
             i += 1
@@ -104,7 +104,7 @@ def _parse_block(
                 tmpl_lines: List[Tuple[int, str, bool]] = []
                 j = i + 1
                 while j < len(parsed):
-                    ci, cc, cb = parsed[j]
+                    ci, _, cb = parsed[j]
                     if not cb and ci <= indent:
                         break
                     tmpl_lines.append(parsed[j])
