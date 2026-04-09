@@ -136,10 +136,6 @@ _JS_STATEMENT_KEYWORDS = {
     "instanceof",
     "void",
 }
-_JS_SECONDARY_KEYWORDS = {"of", "in", "extends"}
-
-_HTML_KEYWORDS = {"for", "if", "else", "of", "in", "slot"}
-
 _MACRO_TAGS = {"table!", "markdown!", "math!", "svg!"}
 _JS_MACROS = {"html!", "text!", "table!", "htm!"}
 
@@ -252,7 +248,7 @@ def _tokenize_html_line(
         args_str = comp_call.group(2)
         if args_str.strip():
             paren_start = raw_line.index("(", name_col)
-            _tokenize_string_args(tokens, line_num, raw_line, paren_start + 1, args_str)
+            _tokenize_string_args(tokens, line_num, paren_start + 1, args_str)
         if has_colon:
             colon_col = raw_line.rindex(":")
             _emit(tokens, line_num, colon_col, 1, "operator")
@@ -292,7 +288,7 @@ def _tokenize_html_line(
         tag_col = indent
         _emit(tokens, line_num, tag_col, len(base_tag), "macro")
         # classes/ids on macro
-        _tokenize_tag_classes_ids(tokens, line_num, raw_line, indent + len(base_tag), tag_part[len(base_tag):])
+        _tokenize_tag_classes_ids(tokens, line_num, indent + len(base_tag), tag_part[len(base_tag):])
         if has_colon:
             colon_col = raw_line.rindex(":")
             _emit(tokens, line_num, colon_col, 1, "operator")
@@ -322,7 +318,7 @@ def _tokenize_html_element(
     tag_part = parts[0]
 
     # Parse tag.class1.class2#id
-    _tokenize_tag_selector(tokens, line_num, raw_line, indent, tag_part)
+    _tokenize_tag_selector(tokens, line_num, indent, tag_part)
 
     # Attributes
     col_offset = indent + len(tag_part)
@@ -352,13 +348,12 @@ def _tokenize_html_element(
     if text:
         text_start = raw_line.find(text, indent)
         if text_start >= 0:
-            _tokenize_interpolations(tokens, line_num, raw_line, text_start, text)
+            _tokenize_interpolations(tokens, line_num, text_start, text)
 
 
 def _tokenize_tag_selector(
     tokens: List[RawToken],
     line_num: int,
-    raw_line: str,
     col: int,
     tag_part: str,
 ) -> None:
@@ -385,7 +380,6 @@ def _tokenize_tag_selector(
     for prefix, text in segments:
         if prefix == "":
             # tag name
-            actual_tag = text.split("!")[0] if "!" in text else text
             _emit(tokens, line_num, offset, len(text), "tag")
             offset += len(text)
         elif prefix == ".":
@@ -401,7 +395,6 @@ def _tokenize_tag_selector(
 def _tokenize_tag_classes_ids(
     tokens: List[RawToken],
     line_num: int,
-    raw_line: str,
     col: int,
     suffix: str,
 ) -> None:
@@ -436,13 +429,11 @@ def _tokenize_tag_classes_ids(
 def _tokenize_interpolations(
     tokens: List[RawToken],
     line_num: int,
-    raw_line: str,
     text_start: int,
     text: str,
 ) -> None:
     """Find {expr} interpolations in text and emit variable tokens."""
     for m in re.finditer(r"\{([^}]+)\}", text):
-        expr = m.group(1)
         brace_col = text_start + m.start()
         # Emit the whole {expr} as variable
         _emit(tokens, line_num, brace_col, m.end() - m.start(), "variable")
@@ -451,7 +442,6 @@ def _tokenize_interpolations(
 def _tokenize_string_args(
     tokens: List[RawToken],
     line_num: int,
-    raw_line: str,
     start_col: int,
     args_str: str,
 ) -> None:
@@ -779,8 +769,6 @@ def _tokenize_script_inline_parts(
     start: int,
 ) -> None:
     """Tokenize inline parts: strings, numbers, keywords, builtins, template vars."""
-    stripped = raw_line.strip()
-
     # Strings: "..." and '...'
     for m in re.finditer(r"""(?:"[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*')""", raw_line):
         if m.start() >= start or m.start() >= len(raw_line) - len(raw_line.lstrip()):
@@ -824,14 +812,6 @@ def get_semantic_tokens(source: str) -> List[int]:
     raw_tokens: List[RawToken] = []
     lines = source.split("\n")
     scan_tokens = scan(source)
-
-    # Context tracking: maintain a stack of (indent, context_type) pairs
-    # to determine if we're in HTML, CSS, or script context
-    context_stack: List[Tuple[int, str]] = []  # (indent, ctx_type)
-
-    # Walk the raw token stream (1:1 with source lines)
-    line_num = 0
-    tok_idx = 0
 
     # Identify script/style blocks by scanning tokens first
     # The raw scan() gives us 1 token per source line
