@@ -449,7 +449,11 @@ def _parse_node(item: dict, parent_tag: str = "") -> Node:
         body = ""
         if children and children[0]["token"].type == "script_body":
             body = children[0]["token"].head
-        return ScriptElement(classes=classes, attributes=attrs, body=body)
+        body_nodes = []
+        if body:
+            from .script_parser import parse_script
+            body_nodes = parse_script(body)
+        return ScriptElement(classes=classes, attributes=attrs, body=body, body_nodes=body_nodes)
 
     text = token.text if token.text else None
     child_nodes = [_parse_node(child, tag) for child in children]

@@ -65,6 +65,7 @@ def test_script_block():
     nodes = parse(scan(source))
     assert isinstance(nodes[0], ScriptElement)
     assert nodes[0].body == "console.log(t)"
+    assert len(nodes[0].body_nodes) == 1
 
 
 def test_script_block_raw():
@@ -73,7 +74,9 @@ def test_script_block_raw():
     script = nodes[0]
     assert isinstance(script, ScriptElement)
     assert "if x > 0:" in script.body
-    assert " console.log(x)" in script.body
+    assert len(script.body_nodes) == 1
+    from .ast import ScriptIf
+    assert isinstance(script.body_nodes[0], ScriptIf)
 
 
 def test_parse_inline():
