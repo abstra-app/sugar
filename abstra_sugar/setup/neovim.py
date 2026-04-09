@@ -21,8 +21,13 @@ def setup_neovim() -> None:
         sys.exit(1)
 
     _install_file(_EDITORS_DIR / "ftdetect" / "sugar.vim", nvim_dir / "ftdetect" / "sugar.vim")
-    _install_file(_EDITORS_DIR / "syntax" / "sugar.vim", nvim_dir / "syntax" / "sugar.vim")
     _install_file(_EDITORS_DIR / "lsp.lua", nvim_dir / "after" / "plugin" / "sugar-lsp.lua")
+
+    # Remove old regex-based syntax highlighting (superseded by LSP semantic tokens)
+    old_syntax = nvim_dir / "syntax" / "sugar.vim"
+    if old_syntax.exists() or old_syntax.is_symlink():
+        old_syntax.unlink()
+        print(f"  Removed old {old_syntax} (LSP semantic tokens used instead)")
 
     print()
     print("Sugar LSP configured for Neovim.")

@@ -31,12 +31,9 @@ def create_server() -> LanguageServer:
 
     @server.feature(
         types.TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
-        types.SemanticTokensOptions(
-            legend=types.SemanticTokensLegend(
-                token_types=TOKEN_TYPES,
-                token_modifiers=TOKEN_MODIFIERS,
-            ),
-            full=True,
+        types.SemanticTokensLegend(
+            token_types=TOKEN_TYPES,
+            token_modifiers=TOKEN_MODIFIERS,
         ),
     )
     def semantic_tokens_full(params: types.SemanticTokensParams):
