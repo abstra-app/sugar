@@ -1,0 +1,26 @@
+{
+  "name": "sugar-lsp",
+  "displayName": "Sugar Language",
+  "description": "Language support for Sugar (.sugar) — semantic highlighting, completion, diagnostics, and more.",
+  "version": "0.1.0",
+  "publisher": "abstra",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Programming Languages"],
+  "activationEvents": ["onLanguage:sugar"],
+  "main": "./extension.js",
+  "dependencies": {
+    "vscode-languageclient": "^9.0.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "sugar",
+        "aliases": ["Sugar", "sugar"],
+        "extensions": [".sugar"],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  }
+}

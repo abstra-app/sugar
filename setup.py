@@ -34,6 +34,11 @@ setup(
     author_email="help@abstra.app",
     url="https://github.com/abstra-app/sugar",
     packages=find_packages(exclude=["tests"]),
+    package_data={
+        "abstra_sugar": [
+            "setup/vscode_extension/**/*",
+        ],
+    },
     install_requires=REQUIREMENTS,
     entry_points={
         "console_scripts": [
